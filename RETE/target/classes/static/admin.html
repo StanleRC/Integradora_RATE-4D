@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RETE - Administración de Talleres</title>
+</head>
+<body>
+<nav>
+    <a href="index.html">1. Inicio / Login</a> |
+    <a href="catalogo.html">2. Catálogo</a> |
+    <a href="inscripciones.html">3. Mis Inscripciones</a> |
+    <a href="admin.html">4. Administración</a>
+</nav>
+<hr>
+
+<h1>Panel de Administración de Talleres</h1>
+
+<!-- Formulario Crear / Editar Taller -->
+<fieldset style="max-width:600px;">
+    <legend id="titulo-form">Registrar Nuevo Taller</legend>
+    <form onsubmit="guardarTaller(event)">
+        <input type="hidden" id="idTaller">
+
+        <label>Nombre del taller:</label><br>
+        <input type="text" id="nombreTaller" required><br><br>
+
+        <label>Descripción:</label><br>
+        <input type="text" id="descripcion" required><br><br>
+
+        <label>Instructor:</label><br>
+        <input type="text" id="instructor" required><br><br>
+
+        <label>Día:</label>
+        <select id="dia">
+            <option value="Lunes">Lunes</option>
+            <option value="Martes">Martes</option>
+            <option value="Miércoles">Miércoles</option>
+            <option value="Jueves">Jueves</option>
+            <option value="Viernes">Viernes</option>
+        </select>
+
+        <label>Inicio:</label>
+        <input type="time" id="horaInicio" required>
+
+        <label>Fin:</label>
+        <input type="time" id="horaFin" required><br><br>
+
+        <label>Aula:</label>
+        <input type="text" id="aula" required>
+
+        <label>Cupo Máximo:</label>
+        <input type="number" id="cupoMaximo" min="1" required><br><br>
+
+        <label><input type="checkbox" id="activo" checked> Taller Activo</label><br><br>
+
+        <button type="submit">Guardar Taller</button>
+        <button type="button" onclick="limpiarFormulario()">Cancelar Edición</button>
+    </form>
+</fieldset>
+
+<hr>
+<h2>Catálogo General</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Taller</th>
+        <th>Instructor</th>
+        <th>Horario</th>
+        <th>Aula</th>
+        <th>Cupo</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody id="tabla-talleres"></tbody>
+</table>
+
+<!-- Sección Lista de Asistencia -->
+<div id="seccion-asistencia" style="display:none; margin-top:20px; border:1px solid #000; padding:10px;">
+    <h3 id="titulo-asistencia">Lista de Asistencia</h3>
+    <div id="contenido-asistencia"></div>
+    <button onclick="window.print()">Imprimir Lista</button>
+    <button onclick="document.getElementById('seccion-asistencia').style.display='none'">Cerrar</button>
+</div>
+
+<script>
+    let listaTalleres = [];
+
+    async function cargarTalleresAdmin() {
+        const res = await fetch('/api/talleres/admin/todos');
+        listaTalleres = await res.json();
+
+        const tbody = document.getElementById('tabla-talleres');
+        tbody.innerHTML = listaTalleres.map(t => `
+                <tr>
+                    <td>${t.idTaller}</td>
+                    <td>${t.nombreTaller}</td>
+                    <td>${t.instructor}</td>
+                    <td>${t.dia} ${t.horaInicio} - ${t.horaFin}</td>
+                    <td>${t.aula}</td>
+                    <td>${t.inscritosActuales} / ${t.cupoMaximo}</td>
+                    <td>${t.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td>
+                        <button onclick="editarTaller(${t.idTaller})">Editar</button>
+                        <button onclick="verAsistencia(${t.idTaller}, '${t.nombreTaller}')">Inscritos</button>
+                        <button onclick="eliminarTaller(${t.idTaller})" style="color:red;">Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    async function guardarTaller(e) {
+        e.preventDefault();
+        const idVal = document.getElementById('idTaller').value;
+        const payload = {
+            idTaller: idVal ? parseInt(idVal) : null,
+            nombreTaller: document.getElementById('nombreTaller').value,
+            descripcion: document.getElementById('descripcion').value,
+            instructor: document.getElementById('instructor').value,
+            dia: document.getElementById('dia').value,
+            horaInicio: document.getElementById('horaInicio').value,
+            horaFin: document.getElementById('horaFin').value,
+            aula: document.getElementById('aula').value,
+            cupoMaximo: parseInt(document.getElementById('cupoMaximo').value),
+            activo: document.getElementById('activo').checked
+        };
+
+        const res = await fetch('/api/talleres/admin/guardar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        alert(data.mensaje);
+
+        if (data.mensaje.startsWith('OK')) {
+            limpiarFormulario();
+            cargarTalleresAdmin();
+        }
+    }
+
+    function editarTaller(id) {
+        const t = listaTalleres.find(item => item.idTaller === id);
+        if (!t) return;
+        document.getElementById('titulo-form').innerText = 'Editando Taller #' + t.idTaller;
+        document.getElementById('idTaller').value = t.idTaller;
+        document.getElementById('nombreTaller').value = t.nombreTaller;
+        document.getElementById('descripcion').value = t.descripcion;
+        document.getElementById('instructor').value = t.instructor;
+        document.getElementById('dia').value = t.dia;
+        document.getElementById('horaInicio').value = t.horaInicio.substring(0, 5);
+        document.getElementById('horaFin').value = t.horaFin.substring(0, 5);
+        document.getElementById('aula').value = t.aula;
+        document.getElementById('cupoMaximo').value = t.cupoMaximo;
+        document.getElementById('activo').checked = t.activo;
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('titulo-form').innerText = 'Registrar Nuevo Taller';
+        document.getElementById('idTaller').value = '';
+        document.querySelector('form').reset();
+        document.getElementById('activo').checked = true;
+    }
+
+    async function eliminarTaller(id) {
+        if (!confirm('¿Eliminar este taller definitivamente?')) return;
+        const res = await fetch(`/api/talleres/admin/eliminar/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        alert(data.mensaje);
+        cargarTalleresAdmin();
+    }
+
+    async function verAsistencia(idTaller, nombre) {
+        const res = await fetch(`/api/talleres/admin/asistencia/${idTaller}`);
+        const alumnos = await res.json();
+        document.getElementById('titulo-asistencia').innerText = 'Alumnos Inscritos en ' + nombre;
+        const div = document.getElementById('contenido-asistencia');
+
+        if (alumnos.length === 0) {
+            div.innerHTML = '<p>Aún no hay alumnos inscritos en este taller.</p>';
+        } else {
+            div.innerHTML = `<ul>` + alumnos.map(a =>
+                `<li><b>${a.matricula}</b> - ${a.nombre} (${a.gradoGrupo}) | Folio: ${a.folio}</li>`
+            ).join('') + `</ul>`;
+        }
+        document.getElementById('seccion-asistencia').style.display = 'block';
+    }
+
+    cargarTalleresAdmin();
+</script>
+</body>
+</html>

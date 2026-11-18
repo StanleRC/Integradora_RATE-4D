@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RETE - Inicio de Sesión</title>
+</head>
+<body>
+<!-- Barra de navegación entre las 4 pantallas -->
+<nav>
+    <a href="index.html">1. Inicio / Login</a> |
+    <a href="catalogo.html">2. Catálogo</a> |
+    <a href="inscripciones.html">3. Mis Inscripciones</a> |
+    <a href="admin.html">4. Administración</a>
+</nav>
+<hr>
+
+<!-- Estado de sesión actual -->
+<div id="info-sesion" style="background:#eee; padding:8px; margin-bottom:15px;"></div>
+
+<!-- SECCIÓN LOGIN -->
+<div id="seccion-login">
+    <h2>Iniciar Sesión - RETE</h2>
+    <form onsubmit="iniciarSesion(event)">
+        <label>Matrícula o Correo Institucional:</label><br>
+        <input type="text" id="login-id" placeholder="Ej. 20253ds108" required><br><br>
+
+        <label>Contraseña:</label><br>
+        <input type="password" id="login-pass" placeholder="Introduce tu contraseña" required><br><br>
+
+        <button type="submit">Iniciar sesión</button>
+    </form>
+    <p><a href="#" onclick="alternarVista(true)">¿No tienes cuenta? Regístrate aquí</a></p>
+    <small>Usuarios de prueba: <b>20253ds108</b> / <b>1234</b> (Alumno) | <b>admin</b> / <b>admin123</b> (Admin)</small>
+</div>
+
+<!-- SECCIÓN REGISTRO (Oculta por defecto) -->
+<div id="seccion-registro" style="display:none;">
+    <h2>Registro de Estudiante</h2>
+    <form onsubmit="registrarUsuario(event)">
+        <label>Nombre completo:</label><br>
+        <input type="text" id="reg-nombre" required><br><br>
+
+        <label>Matrícula:</label><br>
+        <input type="text" id="reg-matricula" required><br><br>
+
+        <label>Correo institucional:</label><br>
+        <input type="email" id="reg-correo" placeholder="matricula@utez.edu.mx" required><br><br>
+
+        <label>Grado y Grupo:</label><br>
+        <input type="text" id="reg-grupo" placeholder="Ej. 4D" required><br><br>
+
+        <label>Contraseña:</label><br>
+        <input type="password" id="reg-pass" required><br><br>
+
+        <button type="submit">Crear cuenta</button>
+    </form>
+    <p><a href="#" onclick="alternarVista(false)">¿Ya tienes cuenta? Inicia sesión</a></p>
+</div>
+
+<script>
+    function mostrarSesion() {
+        const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+        const div = document.getElementById('info-sesion');
+        if (usuario) {
+            div.innerHTML = `Sesión activa: <b>${usuario.nombre}</b> (${usuario.rol})
+                                 <button onclick="cerrarSesion()">Cerrar sesión</button>`;
+        } else {
+            div.innerHTML = 'No has iniciado sesión.';
+        }
+    }
+
+    function cerrarSesion() {
+        sessionStorage.removeItem('usuario');
+        mostrarSesion();
+    }
+
+    function alternarVista(mostrarRegistro) {
+        document.getElementById('seccion-login').style.display = mostrarRegistro ? 'none' : 'block';
+        document.getElementById('seccion-registro').style.display = mostrarRegistro ? 'block' : 'none';
+    }
+
+    async function iniciarSesion(e) {
+        e.preventDefault();
+        const identificador = document.getElementById('login-id').value;
+        const password = document.getElementById('login-pass').value;
+
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identificador, password })
+        });
+        const data = await res.json();
+
+        alert(data.mensaje);
+        if (data.exito) {
+            sessionStorage.setItem('usuario', JSON.stringify(data));
+            window.location.href = (data.rol === 'ADMIN') ? 'admin.html' : 'catalogo.html';
+        }
+    }
+
+    async function registrarUsuario(e) {
+        e.preventDefault();
+        const nuevo = {
+            nombre: document.getElementById('reg-nombre').value,
+            matricula: document.getElementById('reg-matricula').value,
+            correo: document.getElementById('reg-correo').value,
+            gradoGrupo: document.getElementById('reg-grupo').value,
+            password: document.getElementById('reg-pass').value
+        };
+
+        const res = await fetch('/api/auth/registro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevo)
+        });
+        const data = await res.json();
+
+        alert(data.mensaje);
+        if (data.exito) {
+            alternarVista(false);
+        }
+    }
+
+    mostrarSesion();
+</script>
+</body>
+</html>

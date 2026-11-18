@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RETE - Mis Inscripciones</title>
+</head>
+<body>
+<nav>
+    <a href="index.html">1. Inicio / Login</a> |
+    <a href="catalogo.html">2. Catálogo</a> |
+    <a href="inscripciones.html">3. Mis Inscripciones</a> |
+    <a href="admin.html">4. Administración</a>
+</nav>
+<hr>
+
+<h1>Mi Taller Actual y Comprobante</h1>
+<div id="taller-activo"></div>
+
+<hr>
+<h2>Historial de Inscripciones</h2>
+<div id="historial"></div>
+
+<script>
+    const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+
+    async function cargarMisInscripciones() {
+        if (!usuario || !usuario.idEstudiante) {
+            document.getElementById('taller-activo').innerHTML =
+                '<p>Debes <a href="index.html">iniciar sesión</a> para ver tus inscripciones.</p>';
+            return;
+        }
+
+        const res = await fetch(`/api/talleres/mis-inscripciones?idEstudiante=${usuario.idEstudiante}`);
+        const lista = await res.json();
+
+        const activa = lista.find(i => i.estado === 'Confirmada');
+        const contenedorActivo = document.getElementById('taller-activo');
+
+        if (activa) {
+            contenedorActivo.innerHTML = `
+                    <div id="comprobante" style="border:2px solid #000; padding:15px; max-width:500px;">
+                        <h3>COMPROBANTE DE INSCRIPCIÓN - RETE</h3>
+                        <p><b>Folio:</b> ${activa.folio}</p>
+                        <p><b>Alumno:</b> ${activa.nombreAlumno} (${activa.matricula})</p>
+                        <p><b>Taller:</b> ${activa.nombreTaller}</p>
+                        <p><b>Instructor:</b> ${activa.instructor}</p>
+                        <p><b>Horario:</b> ${activa.horario}</p>
+                        <p><b>Aula:</b> ${activa.aula}</p>
+                        <p><b>Estado:</b> ${activa.estado}</p>
+                        <button onclick="window.print()">Imprimir / Guardar Comprobante PDF</button>
+                        <button onclick="cancelar(${activa.idInscripcion})" style="color:red;">Cancelar Inscripción</button>
+                    </div>
+                `;
+        } else {
+            contenedorActivo.innerHTML = '<p>No tienes ningún taller activo actualmente. Ve al <a href="catalogo.html">Catálogo</a> para inscribirte.</p>';
+        }
+
+        const historial = lista.filter(i => i.estado !== 'Confirmada');
+        const contenedorHist = document.getElementById('historial');
+        if (historial.length === 0) {
+            contenedorHist.innerHTML = '<p>Sin movimientos anteriores.</p>';
+        } else {
+            contenedorHist.innerHTML = historial.map(h => `
+                    <div style="border:1px solid #ccc; padding:8px; margin-bottom:5px;">
+                        <b>${h.nombreTaller}</b> | Folio: ${h.folio} | Horario: ${h.horario} | Estado: <b>${h.estado}</b>
+                    </div>
+                `).join('');
+        }
+    }
+
+    async function cancelar(idInscripcion) {
+        if (!confirm('¿Seguro que deseas cancelar tu inscripción? Se liberará tu lugar.')) return;
+        const res = await fetch(`/api/talleres/cancelar?idInscripcion=${idInscripcion}&idEstudiante=${usuario.idEstudiante}`, {
+            method: 'POST'
+        });
+        const data = await res.json();
+        alert(data.mensaje);
+        cargarMisInscripciones();
+    }
+
+    cargarMisInscripciones();
+</script>
+</body>
+</html>

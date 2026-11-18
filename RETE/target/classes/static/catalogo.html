@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RETE - Catálogo de Talleres</title>
+</head>
+<body>
+<!-- Navegación entre las 4 pantallas requeridas -->
+<nav>
+    <a href="index.html">1. Inicio / Login</a> |
+    <a href="catalogo.html">2. Catálogo</a> |
+    <a href="inscripciones.html">3. Mis Inscripciones</a> |
+    <a href="admin.html">4. Administración</a>
+</nav>
+<hr>
+
+<h1>Talleres - Descubre tus pasiones fuera del aula</h1>
+
+<!-- Controles que ejecutan filtrado y ordenamiento sobre tu ListaEnlazada -->
+<input type="text" id="busqueda" placeholder="Buscar taller...">
+<select id="orden">
+    <option value="">Sin ordenar</option>
+    <option value="nombre">Ordenar por Nombre (A-Z)</option>
+    <option value="cupo">Ordenar por Lugares Disponibles</option>
+</select>
+<button onclick="cargarTalleres()">Aplicar</button>
+
+<div id="contenedor-talleres"></div>
+
+<script>
+    async function cargarTalleres() {
+        const q = document.getElementById('busqueda').value;
+        const orden = document.getElementById('orden').value;
+        const res = await fetch(`/api/talleres?q=${encodeURIComponent(q)}&orden=${orden}`);
+        const talleres = await res.json();
+
+        const contenedor = document.getElementById('contenedor-talleres');
+        contenedor.innerHTML = talleres.map(t => `
+                <div style="border:1px solid #000; margin:10px 0; padding:10px;">
+                    <h3>${t.nombreTaller} (${t.estadoCupo.toUpperCase()})</h3>
+                    <p>${t.descripcion} | Instructor: ${t.instructor}</p>
+                    <p>Horario: ${t.dia} de ${t.horaInicio} a ${t.horaFin} | Aula: ${t.aula}</p>
+                    <p>Lugares: ${t.inscritosActuales} / ${t.cupoMaximo}</p>
+                    <button onclick="inscribir(${t.idTaller})" ${t.estadoCupo === 'lleno' ? 'disabled' : ''}>
+                        Inscribirme (Alumno ID: 1)
+                    </button>
+                </div>
+            `).join('');
+    }
+
+    async function inscribir(idTaller) {
+        // 1. Leer los datos del usuario que inició sesión en index.html
+        const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+
+        // 2. Validar que haya iniciado sesión antes de inscribir
+        if (!usuario || !usuario.idEstudiante) {
+            alert('Primero debes iniciar sesión en la pantalla de Inicio.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // 3. Enviar el idEstudiante real en lugar del "1" fijo
+        const res = await fetch(`/api/talleres/inscribir?idEstudiante=${usuario.idEstudiante}&idTaller=${idTaller}`, {
+            method: 'POST'
+        });
+        const data = await res.json();
+        alert(data.mensaje);
+        cargarTalleres();
+    }
+
+    cargarTalleres();
+</script>
+</body>
+</html>
