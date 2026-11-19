@@ -10,6 +10,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/talleres")
 public class TallerController {
+    // Aqui se manejan las operaciones relacionadas con los talleres,
+    // listar, inscribir, cancelar inscripciones y administrar talleres para los administradores
 
     private final TallerService tallerService;
 

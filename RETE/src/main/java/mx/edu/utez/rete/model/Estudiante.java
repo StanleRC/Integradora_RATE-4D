@@ -11,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Estudiante {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idEstudiante;
@@ -25,5 +26,5 @@ public class Estudiante {
 
     private String gradoGrupo;
     private String password;
-    private String rol; // "ESTUDIANTE" o "ADMIN"
+    private String rol; // ESTUDIANTE o ADMIN
 }

@@ -12,6 +12,7 @@ import java.util.Map;
 
 @Service
 public class AuthService {
+    // Aqui se inyecta el repositorio de estudiantes para poder acceder a la base de datos
 
     private final EstudianteRepository estudianteRepository;
     private final ListaEnlazada<Estudiante> usuarios = new ListaEnlazada<>();
@@ -20,9 +21,12 @@ public class AuthService {
         this.estudianteRepository = estudianteRepository;
     }
 
+    //Este metodo es solo de prueba para inicializar la base de datos con un alumno y un administrador
+    // A quien lea esto no lo borre hasta que se termine de probar la aplicacion
+    // Despues yo me encargo de modificarlo para que se pueda registrar un alumno y un administrador desde la aplicacion jeje
     @PostConstruct
     public void inicializarUsuarios() {
-        // Si la tabla está vacía, creamos un alumno y un administrador de prueba
+        // Si la tabla está vacia entonces creamos un alumno y un administrador de prueba
         if (estudianteRepository.count() == 0) {
             estudianteRepository.save(new Estudiante(
                     null, "Stanle Reyes Casimiro", "20253ds108",
@@ -49,7 +53,6 @@ public class AuthService {
             return respuesta;
         }
 
-        // Búsqueda usando el método buscar() de tu ListaEnlazada
         Estudiante encontrado = usuarios.buscar(u ->
                 (u.getMatricula().equalsIgnoreCase(identificador.trim()) ||
                         u.getCorreo().equalsIgnoreCase(identificador.trim())) &&
@@ -74,7 +77,7 @@ public class AuthService {
     public Map<String, Object> registrar(Estudiante nuevo) {
         Map<String, Object> respuesta = new HashMap<>();
 
-        // Validación de campos obligatorios (DFR)
+        // Validacion de campos
         if (nuevo.getNombre() == null || nuevo.getNombre().isBlank() ||
                 nuevo.getMatricula() == null || nuevo.getMatricula().isBlank() ||
                 nuevo.getCorreo() == null || nuevo.getCorreo().isBlank() ||
@@ -84,29 +87,33 @@ public class AuthService {
             return respuesta;
         }
 
-        // Regla 1.1 del DFR: validar correo institucional
+        // Aqui se valida el correo institucional
+        // Si quieren permitir correos de otros dominios, pueden quitar esta validacion pero no lo recomiendo
+        //Si lo van a hacer solo comenten esa parte de codigo
         if (!nuevo.getCorreo().toLowerCase().endsWith("@utez.edu.mx")) {
             respuesta.put("exito", false);
             respuesta.put("mensaje", "Debes usar un correo institucional (@utez.edu.mx).");
             return respuesta;
         }
 
-        // Verificar en la ListaEnlazada que no exista la matrícula o el correo
-        Estudiante duplicado = usuarios.buscar(u ->
-                u.getMatricula().equalsIgnoreCase(nuevo.getMatricula().trim()) ||
-                        u.getCorreo().equalsIgnoreCase(nuevo.getCorreo().trim())
+        // Verificar en la ListaEnlazada que no exista la matricula o el correo
+        Estudiante duplicado = usuarios.buscar(estudiante ->
+                estudiante.getMatricula().equalsIgnoreCase(nuevo.getMatricula().trim()) ||
+                        estudiante.getCorreo().equalsIgnoreCase(nuevo.getCorreo().trim())
         );
 
         if (duplicado != null) {
             respuesta.put("exito", false);
-            respuesta.put("mensaje", "La matrícula o el correo ya están registrados.");
+            respuesta.put("mensaje", "La matricula o el correo ya estan registrados");
             return respuesta;
         }
 
         nuevo.setIdEstudiante(null);
-        nuevo.setRol("ESTUDIANTE"); // Todo registro nuevo entra como estudiante por defecto
+        // Todo registro nuevo entra como estudiante por defecto
+        //Aun me falta el admin :(
+        nuevo.setRol("ESTUDIANTE");
 
-        // Guardar en MySQL y agregar a la ListaEnlazada en memoria
+        // Aqui se guarda en MySQL y se agrega a la ListaEnlazada
         Estudiante guardado = estudianteRepository.save(nuevo);
         usuarios.insertar(guardado);
 

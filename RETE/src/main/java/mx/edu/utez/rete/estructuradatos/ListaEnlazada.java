@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class ListaEnlazada<T> {
+    //Aqui se implementa una lista enlazada generica para almacenar cualquier tipo de objeto
+    // metodos para insertar, buscar, filtrar, ordenar y eliminar elementos de la lista
+
     private Nodo<T> cabeza;
     private int tamanio;
 
@@ -51,7 +54,7 @@ public class ListaEnlazada<T> {
         return resultado;
     }
 
-    // Ordenamiento Burbuja sobre los nodos (ideal para demostrar algoritmos de ordenamiento)
+    // Ordenamiento Burbuja sobre los nodos
     public void ordenar(Comparator<T> comparador) {
         if (cabeza == null || cabeza.getSiguiente() == null) return;
         boolean intercambiado;
@@ -72,7 +75,7 @@ public class ListaEnlazada<T> {
 
     public int getTamanio() { return tamanio; }
 
-    // Conversión únicamente para serializar respuesta JSON en el Controller
+    // Esto realiza respuesta JSON en el Controller
     public List<T> toList() {
         List<T> lista = new ArrayList<>();
         Nodo<T> actual = cabeza;

@@ -20,15 +20,14 @@ public class Taller {
     private String nombreTaller;
     private String descripcion;
     private String instructor;
-    private String dia;          // Ej. "Lunes", "Martes"
-    private LocalTime horaInicio; // Ej. 14:00
-    private LocalTime horaFin;    // Ej. 16:00
+    private String dia; //Lunes, Martes etc
+    private LocalTime horaInicio; // 14:00
+    private LocalTime horaFin;    // 16:00
     private String aula;
     private int cupoMaximo;
     private int inscritosActuales;
     private boolean activo;
 
-    // Determina el estado visual del boceto: "lleno" o "libre"
     public String getEstadoCupo() {
         return (inscritosActuales >= cupoMaximo) ? "lleno" : "libre";
     }

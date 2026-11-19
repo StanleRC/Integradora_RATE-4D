@@ -9,6 +9,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    // Aqui se verifica si el usuario es estudiante o administrador y se le da acceso a la aplicacion dependiendo de su rol
 
     private final AuthService authService;
 
