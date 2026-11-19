@@ -2,60 +2,234 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RETE - Inicio de Sesión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul: #0b3a63;
+            --azul-oscuro: #082c4c;
+            --gris-texto: #6b6b6b;
+            --gris-card: #f0f0f0;
+            --borde: #b9b9b9;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', Arial, sans-serif;
+            color: var(--gris-texto);
+            background: #fff;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--azul);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 12px 20px;
+            height: 66px;
+        }
+        .logo-utez {
+            display: flex;
+            align-items: center;
+            padding-right: 18px;
+            border-right: 1px solid rgba(255,255,255,.7);
+            height: 100%;
+        }
+        .logo-utez img { height: 46px; display: block; }
+        .logo-utez span { color: #fff; font-weight: 700; font-style: italic; font-size: 28px; letter-spacing: 1px; }
+        header h1 { margin: 0; color: #fff; font-size: 26px; font-weight: 700; }
+
+        nav {
+            text-align: center;
+            font-size: 13px;
+            padding: 10px 12px 0;
+        }
+        nav a { color: var(--azul); text-decoration: none; margin: 0 6px; }
+        nav a:hover { text-decoration: underline; }
+
+        main { max-width: 460px; margin: 0 auto; padding: 0 16px 40px; text-align: center; }
+
+        #info-sesion {
+            background: #eee;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 14px 0;
+            font-size: 13px;
+        }
+        #info-sesion button {
+            margin-left: 8px;
+            border: 0;
+            border-radius: 12px;
+            background: var(--azul);
+            color: #fff;
+            font-size: 12px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+
+        h2.titulo { font-size: 20px; font-weight: 600; margin: 22px 0 18px; }
+
+        .avatar {
+            width: 90px; height: 90px;
+            margin: 0 auto -45px;
+            position: relative; z-index: 1;
+            border-radius: 50%;
+            background: #e6e6e6;
+            border: 3px solid #d2d2d2;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .avatar svg { width: 54px; height: 54px; }
+
+        .tarjeta {
+            background: var(--gris-card);
+            border: 1px solid var(--borde);
+            border-radius: 18px;
+            box-shadow: 0 3px 8px rgba(0,0,0,.35);
+            padding: 62px 28px 22px;
+        }
+        label { display: block; font-weight: 700; font-size: 14px; margin: 14px 0 8px; }
+
+        .campo { position: relative; }
+        .campo svg {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%);
+            width: 20px; height: 20px;
+            stroke: #777; fill: none; stroke-width: 1.8;
+        }
+        input {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #cfcfcf;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,.3);
+            font: inherit;
+            font-size: 13px;
+            color: #333;
+            padding: 0 12px;
+            text-align: center;
+        }
+        .campo input { padding-left: 40px; padding-right: 40px; }
+        input::placeholder { color: #aaa; }
+        input:focus-visible, button:focus-visible, a:focus-visible {
+            outline: 2px solid var(--azul);
+            outline-offset: 2px;
+        }
+
+        .btn {
+            margin-top: 22px;
+            border: 0;
+            border-radius: 999px;
+            background: var(--azul);
+            color: #fff;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 10px 22px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,.3);
+        }
+        .btn:hover { background: var(--azul-oscuro); }
+
+        .tarjeta a { color: var(--gris-texto); font-size: 12px; text-decoration: underline; }
+        .olvido { display: inline-block; margin-top: 18px; }
+        .pie-tarjeta { display: flex; justify-content: space-between; margin-top: 22px; }
+
+        .usuarios-prueba { display: block; margin-top: 16px; font-size: 12px; }
+    </style>
 </head>
 <body>
-<!-- Barra de navegación entre las 4 pantallas -->
+
+<header>
+    <div class="logo-utez">
+        <img src="img/utez-logo.png" alt="UTEZ"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+        <span style="display:none;">UTEZ</span>
+    </div>
+    <h1>AbModel - Inscripción a talleres</h1>
+</header>
+
 <nav>
     <a href="index.html">1. Inicio / Login</a> |
     <a href="catalogo.html">2. Catálogo</a> |
     <a href="inscripciones.html">3. Mis Inscripciones</a> |
     <a href="admin.html">4. Administración</a>
 </nav>
-<hr>
 
-<!-- Estado de sesión actual -->
-<div id="info-sesion" style="background:#eee; padding:8px; margin-bottom:15px;"></div>
+<main>
+    <div id="info-sesion"></div>
 
-<!-- SECCIÓN LOGIN -->
-<div id="seccion-login">
-    <h2>Iniciar Sesión - RETE</h2>
-    <form onsubmit="iniciarSesion(event)">
-        <label>Matrícula o Correo Institucional:</label><br>
-        <input type="text" id="login-id" placeholder="Ej. 20253ds108" required><br><br>
+    <h2 class="titulo">Inscripción a talleres</h2>
 
-        <label>Contraseña:</label><br>
-        <input type="password" id="login-pass" placeholder="Introduce tu contraseña" required><br><br>
+    <div class="avatar" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 8h28a4 4 0 0 1 4 4v40a4 4 0 0 1-4 4H12z" fill="#0f7f8f" stroke="#0b3a63" stroke-width="2"/>
+            <path d="M18 20h8M18 28h12M18 36h8" stroke="#fff" stroke-width="2"/>
+            <path d="M46 14l8 8-18 18-10 2 2-10z" fill="#0b3a63" stroke="#0b3a63" stroke-width="2"/>
+        </svg>
+    </div>
 
-        <button type="submit">Iniciar sesión</button>
-    </form>
-    <p><a href="#" onclick="alternarVista(true)">¿No tienes cuenta? Regístrate aquí</a></p>
-    <small>Usuarios de prueba: <b>20253ds108</b> / <b>1234</b> (Alumno) | <b>admin</b> / <b>admin123</b> (Admin)</small>
-</div>
+    <div class="tarjeta">
 
-<!-- SECCIÓN REGISTRO (Oculta por defecto) -->
-<div id="seccion-registro" style="display:none;">
-    <h2>Registro de Estudiante</h2>
-    <form onsubmit="registrarUsuario(event)">
-        <label>Nombre completo:</label><br>
-        <input type="text" id="reg-nombre" required><br><br>
+        <!-Login->
+        <div id="seccion-login">
+            <form onsubmit="iniciarSesion(event)">
+                <label for="login-id" id="lbl-login-id">Matrícula</label>
+                <div class="campo">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                    <input type="text" id="login-id" placeholder="Introduce tu matrícula o correo" required>
+                </div>
 
-        <label>Matrícula:</label><br>
-        <input type="text" id="reg-matricula" required><br><br>
+                <label for="login-pass">Contraseña</label>
+                <div class="campo">
+                    <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                    <input type="password" id="login-pass" placeholder="Introduce tu contraseña" required>
+                </div>
 
-        <label>Correo institucional:</label><br>
-        <input type="email" id="reg-correo" placeholder="matricula@utez.edu.mx" required><br><br>
+                <button type="submit" class="btn">Iniciar sesión</button>
+            </form>
 
-        <label>Grado y Grupo:</label><br>
-        <input type="text" id="reg-grupo" placeholder="Ej. 4D" required><br><br>
+            <a href="#" class="olvido" onclick="olvidoPassword(event)">¿Olvidaste la contraseña?</a>
 
-        <label>Contraseña:</label><br>
-        <input type="password" id="reg-pass" required><br><br>
+            <div class="pie-tarjeta">
+                <a href="#" onclick="alternarVista(true)">¿No tienes cuenta?</a>
+                <a href="#" onclick="modoAdministrador(event)">¿Eres administrador?</a>
+            </div>
 
-        <button type="submit">Crear cuenta</button>
-    </form>
-    <p><a href="#" onclick="alternarVista(false)">¿Ya tienes cuenta? Inicia sesión</a></p>
-</div>
+            <small class="usuarios-prueba">Usuarios de prueba: <b>20253ds108</b> / <b>1234</b> (Alumno) | <b>admin</b> / <b>admin123</b> (Admin)</small>
+        </div>
+
+        //Registro
+        <div id="seccion-registro" style="display:none;">
+            <h2 class="titulo" style="margin-top:0;">Registro de estudiante</h2>
+            <form onsubmit="registrarUsuario(event)">
+                <label for="reg-nombre">Nombre completo</label>
+                <input type="text" id="reg-nombre" required>
+
+                <label for="reg-matricula">Matrícula</label>
+                <input type="text" id="reg-matricula" required>
+
+                <label for="reg-correo">Correo institucional</label>
+                <input type="email" id="reg-correo" placeholder="matricula@utez.edu.mx" required>
+
+                <label for="reg-grupo">Grado y Grupo</label>
+                <input type="text" id="reg-grupo" placeholder="Ej. 4D" required>
+
+                <label for="reg-pass">Contraseña</label>
+                <input type="password" id="reg-pass" required>
+
+                <button type="submit" class="btn">Crear cuenta</button>
+            </form>
+            <div class="pie-tarjeta" style="justify-content:center;">
+                <a href="#" onclick="alternarVista(false)">¿Ya tienes cuenta? Inicia sesión</a>
+            </div>
+        </div>
+    </div>
+</main>
 
 <script>
     function mostrarSesion() {
@@ -77,6 +251,19 @@
     function alternarVista(mostrarRegistro) {
         document.getElementById('seccion-login').style.display = mostrarRegistro ? 'none' : 'block';
         document.getElementById('seccion-registro').style.display = mostrarRegistro ? 'block' : 'none';
+    }
+
+    // Enlace registro
+    function modoAdministrador(e) {
+        e.preventDefault();
+        document.getElementById('lbl-login-id').textContent = 'Usuario administrador';
+        document.getElementById('login-id').placeholder = 'Introduce tu usuario';
+        document.getElementById('login-id').focus();
+    }
+
+    function olvidoPassword(e) {
+        e.preventDefault();
+        alert('Para recuperar tu contraseña comunícate con el administrador.');
     }
 
     async function iniciarSesion(e) {
