@@ -2,31 +2,223 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RETE - Catálogo de Talleres</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/rete.css">
+    <style>
+        :root {
+            --azul: #0b3a63;
+            --azul-oscuro: #082c4c;
+            --verde: #0b6b4f;
+            --gris-texto: #5c5c5c;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f6f6f6;
+            color: #111;
+        }
+
+        /*Navegación entre pantallas*/
+        .nav-pantallas { text-align: center; font-size: 13px; padding: 10px 12px 0; }
+        .nav-pantallas a { color: var(--azul); text-decoration: none; margin: 0 6px; }
+        .nav-pantallas a:hover { text-decoration: underline; }
+
+        main { max-width: 1240px; margin: 0 auto; padding: 18px 24px 48px; }
+
+        /*Banner principal*/
+        .hero {
+            background: #fff;
+            border-radius: 28px;
+            box-shadow: 0 3px 8px rgba(0,0,0,.2);
+            padding: 18px 70px;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .hero-img {
+            flex: 1 1 320px;
+            max-width: 520px;
+            aspect-ratio: 16 / 9;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #0f7f8f, #0b3a63);
+            overflow: hidden;
+        }
+        .hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hero-texto { flex: 1 1 320px; text-align: center; }
+        .hero-texto h2 {
+            margin: 0 0 22px;
+            font-size: clamp(30px, 4.2vw, 56px);
+            line-height: 1.1;
+            font-weight: 800;
+            color: #000;
+        }
+        .hero-texto p {
+            margin: 0 auto;
+            max-width: 420px;
+            font-size: clamp(18px, 2vw, 28px);
+            font-weight: 700;
+            line-height: 1.25;
+            color: var(--gris-texto);
+        }
+
+        /*Controles de búsqueda y orden*/
+        .controles {
+            display: flex; flex-wrap: wrap; gap: 10px;
+            justify-content: center;
+            margin: 28px 0 8px;
+        }
+        .controles input, .controles select {
+            height: 40px;
+            border: 1px solid #cfcfcf;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,.2);
+            font: inherit; font-size: 14px;
+            padding: 0 14px;
+        }
+        .controles input { width: min(320px, 100%); }
+        .btn {
+            border: 0;
+            border-radius: 999px;
+            background: var(--azul);
+            color: #fff;
+            font: inherit; font-size: 13px; font-weight: 600;
+            padding: 0 22px; height: 40px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,.3);
+        }
+        .btn:hover:not(:disabled) { background: var(--azul-oscuro); }
+        .btn:disabled { background: #b5b5b5; cursor: not-allowed; box-shadow: none; }
+        input:focus-visible, select:focus-visible, button:focus-visible {
+            outline: 2px solid var(--azul);
+            outline-offset: 2px;
+        }
+
+        /*Tarjetas de talleres*/
+        #contenedor-talleres {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+            gap: 38px 36px;
+            margin-top: 24px;
+        }
+        .taller {
+            background: #fff;
+            box-shadow: 0 1px 6px rgba(0,0,0,.25);
+            display: flex; flex-direction: column;
+        }
+        .taller-img {
+            position: relative;
+            height: 230px;
+            background: linear-gradient(135deg, #0f7f8f, #0b3a63);
+            overflow: hidden;
+        }
+        .taller-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .fav {
+            position: absolute; top: 8px; right: 10px;
+            width: 36px; height: 36px;
+            border: 0; background: transparent; cursor: pointer; padding: 4px;
+        }
+        .fav svg { width: 100%; height: 100%; fill: none; stroke: #000; stroke-width: 2; }
+        .fav.activo svg { fill: #e0245e; stroke: #e0245e; }
+
+        .img-link { position: absolute; inset: 0; }
+        .fav { z-index: 1; }
+        .taller-info h3 a { color: inherit; text-decoration: none; }
+        .taller-info h3 a:hover { text-decoration: underline; }
+        .taller-info { padding: 22px 18px 18px; display: flex; flex-direction: column; flex: 1; }
+        .taller-info h3 { margin: 0 0 6px; font-size: 18px; font-weight: 700; }
+        .instructor { margin: 0 0 14px; font-size: 14px; }
+        .detalle { margin: 0 0 4px; font-size: 12px; color: var(--gris-texto); }
+        .cupos { margin: 10px 0 2px; font-size: 14px; font-weight: 700; color: var(--verde); }
+        .estado { margin: 0 0 14px; font-size: 18px; }
+        .taller.lleno .cupos { color: #b3261e; }
+        .taller-info .btn { margin-top: auto; width: 100%; }
+    </style>
 </head>
 <body>
+
+<header class="rete-header">
+    <div class="logo-utez">
+        <!-- Coloca aquí el logo de UTEZ (img/utez-logo.png)-->
+        <img src="img/utez-logo.png" alt="UTEZ"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+        <span style="display:none;">UTEZ</span>
+    </div>
+    <h1>AbModel - Inscripción a talleres</h1>
+
+    <button class="menu-btn" id="btn-menu" aria-label="Abrir menú" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <nav class="menu-nav" id="menu-nav" aria-label="Menú principal">
+        <div class="menu-usuario">
+            <strong id="menu-nombre">Julian Daniel Perez Perez</strong>
+            <span id="menu-rol">Estudiante</span>
+        </div>
+        <ul>
+            <li><a href="perfil.html">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+                Mi perfil</a></li>
+            <li><a href="catalogo.html">
+                <svg viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-9-2v14c4 0 7 .5 9 2 2-1.5 5-2 9-2V4c-4 0-7 .5-9 2zM12 6v14"/></svg>
+                Talleres Existentes</a></li>
+            <li><a href="inscripciones.html">
+                <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>
+                Mis talleres</a></li>
+            <li><a href="guardados.html">
+                <svg viewBox="0 0 24 24"><path d="M12 21s-8-5.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.6-8 11-8 11z"/></svg>
+                Talleres guardados</a></li>
+        </ul>
+        <div class="menu-salir-wrap">
+            <button type="button" class="menu-salir" onclick="cerrarSesion()">
+                <svg viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/></svg>
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+</header>
+
 <!-- Navegación entre las 4 pantallas requeridas -->
-<nav>
+<nav class="nav-pantallas">
     <a href="index.html">1. Inicio / Login</a> |
     <a href="catalogo.html">2. Catálogo</a> |
     <a href="inscripciones.html">3. Mis Inscripciones</a> |
     <a href="admin.html">4. Administración</a>
 </nav>
-<hr>
 
-<h1>Talleres - Descubre tus pasiones fuera del aula</h1>
+<main>
+    <section class="hero">
+        <div class="hero-img">
+            <!-- Foto del banner: img/banner-talleres.jpg -->
+            <img src="img/banner-talleres.jpg" alt="Alumnos con medallas de talleres"
+                 onerror="this.style.display='none';">
+        </div>
+        <div class="hero-texto">
+            <h2>¡INSCRÍBETE A TUS TALLERES!</h2>
+            <p>Desarrolla nuevas habilidades y libera tus créditos</p>
+        </div>
+    </section>
 
-<!-- Controles que ejecutan filtrado y ordenamiento sobre tu ListaEnlazada -->
-<input type="text" id="busqueda" placeholder="Buscar taller...">
-<select id="orden">
-    <option value="">Sin ordenar</option>
-    <option value="nombre">Ordenar por Nombre (A-Z)</option>
-    <option value="cupo">Ordenar por Lugares Disponibles</option>
-</select>
-<button onclick="cargarTalleres()">Aplicar</button>
+    <!-- Controles que ejecutan filtrado y ordenamiento sobre tu ListaEnlazada -->
+    <div class="controles">
+        <input type="text" id="busqueda" placeholder="Buscar taller...">
+        <select id="orden">
+            <option value="">Sin ordenar</option>
+            <option value="nombre">Ordenar por Nombre (A-Z)</option>
+            <option value="cupo">Ordenar por Lugares Disponibles</option>
+        </select>
+        <button class="btn" onclick="cargarTalleres()">Aplicar</button>
+    </div>
 
-<div id="contenedor-talleres"></div>
+    <div id="contenedor-talleres"></div>
+</main>
 
+<script src="js/rete.js"></script>
 <script>
     async function cargarTalleres() {
         const q = document.getElementById('busqueda').value;
@@ -36,15 +228,26 @@
 
         const contenedor = document.getElementById('contenedor-talleres');
         contenedor.innerHTML = talleres.map(t => `
-                <div style="border:1px solid #000; margin:10px 0; padding:10px;">
-                    <h3>${t.nombreTaller} (${t.estadoCupo.toUpperCase()})</h3>
-                    <p>${t.descripcion} | Instructor: ${t.instructor}</p>
-                    <p>Horario: ${t.dia} de ${t.horaInicio} a ${t.horaFin} | Aula: ${t.aula}</p>
-                    <p>Lugares: ${t.inscritosActuales} / ${t.cupoMaximo}</p>
-                    <button onclick="inscribir(${t.idTaller})" ${t.estadoCupo === 'lleno' ? 'disabled' : ''}>
-                        Inscribirme (Alumno ID: 1)
-                    </button>
-                </div>
+                <article class="taller ${t.estadoCupo === 'lleno' ? 'lleno' : ''}">
+                    <div class="taller-img">
+                        ${t.imagen ? `<img src="${t.imagen}" alt="${t.nombreTaller}" onerror="this.style.display='none'">` : ''}
+                        <a class="img-link" href="detalle-taller.html?id=${t.idTaller}" aria-label="Ver detalle de ${t.nombreTaller}"></a>
+                        <button class="fav" onclick="this.classList.toggle('activo')" aria-label="Marcar como favorito">
+                            <svg viewBox="0 0 24 24"><path d="M12 21s-8-5.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.600-8 11-8 11z"/></svg>
+                        </button>
+                    </div>
+                    <div class="taller-info">
+                        <h3><a href="detalle-taller.html?id=${t.idTaller}">${t.nombreTaller}</a></h3>
+                        <p class="instructor">Inst. ${t.instructor}</p>
+                        <p class="detalle">${t.descripcion}</p>
+                        <p class="detalle">Horario: ${t.dia} de ${t.horaInicio} a ${t.horaFin} | Aula: ${t.aula}</p>
+                        <p class="cupos">Cupos: ${t.inscritosActuales} de ${t.cupoMaximo}</p>
+                        <p class="estado">${t.estadoCupo === 'lleno' ? 'Cupo lleno' : 'Registro libre'}</p>
+                        <button class="btn" onclick="inscribir(${t.idTaller})" ${t.estadoCupo === 'lleno' ? 'disabled' : ''}>
+                            Inscribirme
+                        </button>
+                    </div>
+                </article>
             `).join('');
     }
 
