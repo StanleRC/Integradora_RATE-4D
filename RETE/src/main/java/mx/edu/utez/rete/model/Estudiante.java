@@ -26,5 +26,5 @@ public class Estudiante {
 
     private String gradoGrupo;
     private String password;
-    private String rol; // ESTUDIANTE o ADMIN
+    private String rol; // Este campo es para el valor de ESTUDIANTE
 }
