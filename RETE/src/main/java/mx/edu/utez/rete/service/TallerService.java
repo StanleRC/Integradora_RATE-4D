@@ -35,13 +35,18 @@ public class TallerService {
     @PostConstruct
     public void inicializarDatos() {
         if (tallerRepository.count() == 0) {
-            tallerRepository.save(new Taller(null, "Voleibol", "Entrenamiento y torneos", "Prof. Carlos", "Lunes", LocalTime.of(14, 0), LocalTime.of(16, 0), "Cancha 1", 20, 20, true));
-            tallerRepository.save(new Taller(null, "Basquetbol", "Fundamentos y práctica", "Prof. Ana", "Lunes", LocalTime.of(15, 0), LocalTime.of(17, 0), "Cancha 2", 15, 8, true));
-            tallerRepository.save(new Taller(null, "Pintura", "Técnicas en óleo", "Mtra. Elena", "Miércoles", LocalTime.of(14, 0), LocalTime.of(16, 0), "Aula Arte 2", 12, 5, true));
-            tallerRepository.save(new Taller(null, "Canto", "Vocalización y ensamble", "Prof. Luis", "Viernes", LocalTime.of(13, 0), LocalTime.of(15, 0), "Auditorio", 10, 10, true));
+            tallerRepository.save(new Taller(null, "Voleibol", "Entrenamiento y torneos", "Prof. Carlos", "Lunes", LocalTime.of(14, 0), LocalTime.of(16, 0), "Cancha 1", null, 20, 20, true));
+            tallerRepository.save(new Taller(null, "Basquetbol", "Fundamentos y práctica", "Prof. Ana", "Lunes", LocalTime.of(15, 0), LocalTime.of(17, 0), "Cancha 2", null, 15, 8, true));
+            tallerRepository.save(new Taller(null, "Pintura", "Técnicas en óleo", "Mtra. Elena", "Miércoles", LocalTime.of(14, 0), LocalTime.of(16, 0), "Aula Arte 2", null, 12, 5, true));
+            tallerRepository.save(new Taller(null, "Canto", "Vocalización y ensamble", "Prof. Luis", "Viernes", LocalTime.of(13, 0), LocalTime.of(15, 0), "Auditorio", "/img/talleres/canto-1.png", 10, 10, true));
         }
 
         for (Taller t : tallerRepository.findAll()) {
+            if ("Canto".equalsIgnoreCase(t.getNombreTaller()) &&
+                    (t.getImagen() == null || t.getImagen().isBlank())) {
+                t.setImagen("/img/talleres/canto-1.png");
+                tallerRepository.save(t);
+            }
             talleres.insertar(t);
         }
         for (Inscripcion i : inscripcionRepository.findAll()) {
@@ -113,6 +118,7 @@ public class TallerService {
             if (t != null) {
                 detalle.put("nombreTaller", t.getNombreTaller());
                 detalle.put("instructor", t.getInstructor());
+                detalle.put("imagen", t.getImagen());
                 detalle.put("horario", t.getDia() + " de " + t.getHoraInicio() + " a " + t.getHoraFin());
                 detalle.put("aula", t.getAula());
             }
@@ -151,6 +157,7 @@ public class TallerService {
     }
 
     public String guardarTaller(Taller datos) {
+        datos.setImagen(normalizarImagen(datos.getImagen()));
         if (datos.getCupoMaximo() <= 0) {
             return "ERROR: El cupo máximo debe ser mayor a cero.";
         }
@@ -199,12 +206,17 @@ public class TallerService {
             existente.setHoraInicio(datos.getHoraInicio());
             existente.setHoraFin(datos.getHoraFin());
             existente.setAula(datos.getAula());
+            existente.setImagen(datos.getImagen());
             existente.setCupoMaximo(datos.getCupoMaximo());
             existente.setActivo(datos.isActivo());
 
             tallerRepository.save(existente);
             return "OK: Taller actualizado correctamente.";
         }
+    }
+
+    private String normalizarImagen(String imagen) {
+        return imagen == null || imagen.isBlank() ? null : imagen.trim();
     }
 
     public String eliminarTaller(int idTaller) {
