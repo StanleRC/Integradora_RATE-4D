@@ -28,32 +28,11 @@
         /*Galería*/
         .principal { aspect-ratio: 1 / 1; background: linear-gradient(135deg, #0f7f8f, #0b3a63); overflow: hidden; }
         .principal img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .miniaturas { display: flex; gap: 22px; margin-top: 14px; }
-        .miniaturas button {
-            width: 62px; height: 62px; padding: 0; border: 2px solid transparent;
-            background: linear-gradient(135deg, #0f7f8f, #0b3a63);
-            cursor: pointer; overflow: hidden;
-        }
-        .miniaturas button.activa { border-color: var(--turquesa); }
-        .miniaturas img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
         /* ----- Información ----- */
         .info { padding-top: 6px; }
         .info h2 { margin: 0 0 26px; font-size: clamp(30px, 4vw, 44px); line-height: 1.1; font-weight: 600; max-width: 420px; }
         .dato { margin: 0 0 18px; font-size: 20px; line-height: 1.25; max-width: 400px; }
         .dato b { font-weight: 700; }
-
-        .calificacion { display: flex; align-items: center; gap: 8px; margin: 4px 0 26px; }
-        /* Para cambiar la calificación: elemento.style.setProperty('--valor', 3.5) */
-        .estrellas {
-            --valor: 3.5;
-            font-size: 24px; letter-spacing: 1px; line-height: 1;
-            background: linear-gradient(90deg, #8ad7e0 calc(var(--valor) / 5 * 100%), #fff 0);
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent;
-            -webkit-text-stroke: 1px #1b7f8a;
-        }
-        .resenas { color: #777; font-size: 13px; }
 
         .botones { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 320px; margin-top: 8px; }
         .botones .btn { width: 100%; max-width: 224px; height: 42px; font-size: 15px; }
@@ -93,7 +72,7 @@
             <span id="menu-rol">Estudiante</span>
         </div>
         <ul>
-            <li><a href="../../../../../../../../Downloads/perfil.html">
+            <li><a href="perfil.html">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
                 Mi perfil</a></li>
             <li><a href="catalogo.html">
@@ -128,42 +107,24 @@
         <!--Galería-->
         <section class="galeria">
             <div class="principal">
-                <img id="taller-imagen" src="img/talleres/canto-1.png" alt="Foto principal del taller"
+                <img id="taller-imagen" alt="Imagen del taller"
                      onerror="this.style.display='none'">
-            </div>
-            <div class="miniaturas" id="taller-miniaturas">
-                <button class="activa" onclick="cambiarImagen(this)" data-src="img/talleres/canto-1.jpg" aria-label="Foto 1">
-                    <img src="img/talleres/canto-1.png" alt="" onerror="this.style.display='none'">
-                </button>
-                <button onclick="cambiarImagen(this)" data-src="img/talleres/canto-2.jpg" aria-label="Foto 2">
-                    <img src="img/talleres/canto-2.png" alt="" onerror="this.style.display='none'">
-                </button>
-                <button onclick="cambiarImagen(this)" data-src="img/talleres/canto-3.jpg" aria-label="Foto 3">
-                    <img src="img/talleres/canto-3.png" alt="" onerror="this.style.display='none'">
-                </button>
             </div>
         </section>
 
         <!--Información-->
         <section class="info">
-            <h2 id="taller-nombre">Taller de canto individual</h2>
+            <h2 id="taller-nombre">Cargando taller...</h2>
 
-            <p class="dato"><b>Instructor:</b> <span id="taller-instructor">Carmen Giles</span></p>
-            <p class="dato"><b>Descripción:</b> <span id="taller-descripcion">Desarrolla tus habilidades de vocalización</span></p>
-            <p class="dato"><b>Cupos:</b> Quedan <span id="taller-cupos">3</span> lugares disponibles</p>
-
-            <!-- Otros datos del taller disponibles en la API (opcional, descomentar si los quieres mostrar):
+            <p class="dato"><b>Instructor:</b> <span id="taller-instructor"></span></p>
+            <p class="dato"><b>Descripción:</b> <span id="taller-descripcion"></span></p>
             <p class="dato"><b>Horario:</b> <span id="taller-horario"></span></p>
             <p class="dato"><b>Aula:</b> <span id="taller-aula"></span></p>
-            -->
-
-            <div class="calificacion">
-                <span class="estrellas" id="taller-estrellas" aria-label="Calificación">★★★★★</span>
-                <span class="resenas">(<span id="taller-resenas">400</span>)</span>
-            </div>
+            <p class="dato" id="taller-cupos"></p>
+            <p class="dato" id="mensaje-taller" role="status" aria-live="polite"></p>
 
             <div class="botones">
-                <button class="btn btn-primario" id="btn-inscribirse" onclick="inscribirse()">Inscribirse ahora</button>
+                <button class="btn btn-primario" id="btn-inscribirse" onclick="inscribirse()" disabled>Inscribirse ahora</button>
                 <button class="btn btn-secundario" id="btn-guardar" onclick="alternarFavorito()">
                     <svg class="corazon" viewBox="0 0 24 24"><path d="M12 21s-8-5.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.6-8 11-8 11z"/></svg>
                     Guardar taller
@@ -178,16 +139,8 @@
     <form class="modal-caja" id="form-confirmacion" onsubmit="confirmarInscripcion(event)" novalidate>
         <h2 class="modal-titulo" id="modal-titulo">Confirmación de registro</h2>
 
-        <div class="modal-campo">
-            <label for="conf-matricula">*Matrícula del alumno</label>
-            <input type="text" id="conf-matricula" name="matricula" maxlength="20" oninput="limpiarErrorMatricula()" required>
-            <p class="modal-error" id="conf-matricula-error" hidden>Error la matrícula debe tener 10 caracteres</p>
-        </div>
-
-        <div class="modal-campo">
-            <label for="conf-carrera-grupo">*Carrera y grupo</label>
-            <input type="text" id="conf-carrera-grupo" name="carreraGrupo" required>
-        </div>
+        <p id="confirmacion-texto"></p>
+        <p class="modal-error" id="confirmacion-error" role="alert" hidden></p>
 
         <div class="modal-acciones">
             <button type="button" class="btn btn-secundario" id="btn-cancelar" onclick="cerrarConfirmacion()">Cancelar</button>
@@ -200,62 +153,135 @@
 <script src="js/rete.js"></script>
 <script>
 
-    // ===== Galería (solo interfaz) =====
-    function cambiarImagen(boton) {
-        document.getElementById('taller-imagen').style.display = '';
-        document.getElementById('taller-imagen').src = boton.dataset.src;
-        document.querySelectorAll('#taller-miniaturas button').forEach(b => b.classList.remove('activa'));
-        boton.classList.add('activa');
-    }
-
-    // ===== Lógica pendiente =====
-    function cargarTaller() {
-        // TODO: const id = new URLSearchParams(location.search).get('id');
-        //       fetch del taller y rellenar #taller-nombre, #taller-instructor,
-        //       #taller-descripcion, #taller-cupos, #taller-resenas, la galería
-        //       y la calificación con #taller-estrellas.style.setProperty('--valor', valor).
-        //       Si el cupo está lleno: deshabilitar #btn-inscribirse.
-    }
-
-    // ===== Confirmación de registro =====
     const modal = document.getElementById('modal-confirmacion');
-    const inputMatricula = document.getElementById('conf-matricula');
-    const errorMatricula = document.getElementById('conf-matricula-error');
+    const botonInscribirse = document.getElementById('btn-inscribirse');
+    const botonConfirmar = document.getElementById('btn-confirmar');
+    const mensajeTaller = document.getElementById('mensaje-taller');
+    const errorConfirmacion = document.getElementById('confirmacion-error');
+    const idTaller = Number(new URLSearchParams(window.location.search).get('id'));
 
     function inscribirse() {
-        // TODO (opcional): validar sessionStorage 'usuario' antes de abrir, como en catalogo.html
-        // y precargar la matrícula del alumno en #conf-matricula.
+        const usuario = obtenerUsuario();
+        if (!usuario || !usuario.idEstudiante) {
+            alert('Primero inicia sesión como alumno para inscribirte.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        if (botonInscribirse.disabled) return;
+        errorConfirmacion.hidden = true;
+        document.getElementById('confirmacion-texto').textContent =
+            `¿Deseas inscribirte en "${document.getElementById('taller-nombre').textContent}"?`;
         modal.showModal();
-        inputMatricula.focus();
+        botonConfirmar.focus();
     }
 
     function cerrarConfirmacion() {
         modal.close();
-        document.getElementById('form-confirmacion').reset();
-        limpiarErrorMatricula();
+        errorConfirmacion.hidden = true;
     }
 
-    function limpiarErrorMatricula() {
-        errorMatricula.hidden = true;
-        inputMatricula.classList.remove('invalido');
-    }
-
-    function confirmarInscripcion(e) {
+    async function confirmarInscripcion(e) {
         e.preventDefault();
-        const matricula = inputMatricula.value.trim();
-        const carreraGrupo = document.getElementById('conf-carrera-grupo').value.trim();
-
-        // Validación del boceto: la matrícula debe tener 10 caracteres
-        if (matricula.length !== 10) {
-            errorMatricula.hidden = false;
-            inputMatricula.classList.add('invalido');
-            inputMatricula.focus();
+        const usuario = obtenerUsuario();
+        if (!usuario || !usuario.idEstudiante) {
+            cerrarConfirmacion();
+            alert('Tu sesión no es válida. Inicia sesión nuevamente.');
+            window.location.href = 'index.html';
             return;
         }
-        limpiarErrorMatricula();
 
-        // TODO: POST a /api/talleres/inscribir con matricula, carreraGrupo e idTaller
-        //       (reutilizar la lógica de inscribir() de catalogo.html), luego cerrarConfirmacion().
+        botonConfirmar.disabled = true;
+        botonConfirmar.textContent = 'Inscribiendo...';
+        errorConfirmacion.hidden = true;
+
+        try {
+            const params = new URLSearchParams({
+                idEstudiante: usuario.idEstudiante,
+                idTaller
+            });
+            const respuesta = await fetch(`/api/talleres/inscribir?${params}`, { method: 'POST' });
+            const datos = await respuesta.json();
+            if (!respuesta.ok) {
+                throw new Error(datos.mensaje || `Error del servidor (${respuesta.status})`);
+            }
+            if (!datos.mensaje || !datos.mensaje.startsWith('OK')) {
+                errorConfirmacion.textContent = datos.mensaje || 'No se pudo completar la inscripción.';
+                errorConfirmacion.hidden = false;
+                return;
+            }
+
+            cerrarConfirmacion();
+            alert(datos.mensaje);
+            window.location.href = 'catalogo.html';
+        } catch (error) {
+            errorConfirmacion.textContent = error.message || 'No se pudo completar la inscripción.';
+            errorConfirmacion.hidden = false;
+        } finally {
+            botonConfirmar.disabled = false;
+            botonConfirmar.textContent = 'Inscribirme';
+        }
+    }
+
+    function obtenerUsuario() {
+        try {
+            return JSON.parse(sessionStorage.getItem('usuario') || 'null');
+        } catch {
+            return null;
+        }
+    }
+
+    async function cargarTaller() {
+        if (!Number.isSafeInteger(idTaller) || idTaller < 1) {
+            mostrarErrorTaller('No se indicó un taller válido.');
+            return;
+        }
+
+        try {
+            const respuesta = await fetch('/api/talleres');
+            if (!respuesta.ok) {
+                throw new Error(`Error del servidor (${respuesta.status})`);
+            }
+            const talleres = await respuesta.json();
+            const taller = talleres.find(item => Number(item.idTaller) === idTaller);
+            if (!taller) {
+                mostrarErrorTaller('El taller no existe o ya no está disponible.');
+                return;
+            }
+
+            document.getElementById('detalle-taller').dataset.idTaller = taller.idTaller;
+            document.getElementById('taller-nombre').textContent = taller.nombreTaller || 'Taller';
+            document.getElementById('taller-instructor').textContent = taller.instructor || 'Por asignar';
+            document.getElementById('taller-descripcion').textContent = taller.descripcion || 'Sin descripción.';
+            document.getElementById('taller-horario').textContent =
+                `${taller.dia || 'Día por definir'} de ${taller.horaInicio || '--:--'} a ${taller.horaFin || '--:--'}`;
+            document.getElementById('taller-aula').textContent = taller.aula || 'Por asignar';
+
+            const disponibles = Math.max(0, Number(taller.cupoMaximo) - Number(taller.inscritosActuales));
+            const cupos = document.getElementById('taller-cupos');
+            cupos.textContent = disponibles > 0
+                ? `Quedan ${disponibles} ${disponibles === 1 ? 'lugar disponible' : 'lugares disponibles'}.`
+                : 'Cupo lleno.';
+
+            const imagen = document.getElementById('taller-imagen');
+            if (taller.imagen) {
+                imagen.src = taller.imagen;
+                imagen.alt = `Imagen del taller ${taller.nombreTaller}`;
+                imagen.style.display = '';
+            } else {
+                imagen.style.display = 'none';
+            }
+
+            botonInscribirse.disabled = disponibles === 0;
+        } catch (error) {
+            mostrarErrorTaller(error.message || 'No se pudo cargar el taller.');
+        }
+    }
+
+    function mostrarErrorTaller(mensaje) {
+        document.getElementById('taller-nombre').textContent = 'No se pudo cargar el taller';
+        mensajeTaller.textContent = mensaje;
+        botonInscribirse.disabled = true;
     }
 
     function alternarFavorito() {
