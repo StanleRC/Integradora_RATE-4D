@@ -52,11 +52,11 @@ public class AuthService {
         }
     }
 
-    // Aqui se manejan las operaciones de autenticación y registro de usuarios, tanto estudiantes como administradores
-    public Map<String, Object> login(String identificador, String password) {
+    // Aqui se manejan las operaciones de autenticación y registro de usuarios y administradores
+    public Map<String, Object> login(String identificador, String contrasena) {
         Map<String, Object> respuesta = new HashMap<>();
 
-        if (identificador == null || identificador.isBlank() || password == null || password.isBlank()) {
+        if (identificador == null || identificador.isBlank() || contrasena == null || contrasena.isBlank()) {
             respuesta.put("exito", false);
             respuesta.put("mensaje", "Debes ingresar tu correo/matrícula y contraseña.");
             return respuesta;
@@ -65,10 +65,10 @@ public class AuthService {
         String idLimpio = identificador.trim();
 
         // Buscar primero en la ListaEnlazada de Estudiantes
-        Estudiante estEncontrado = estudiantes.buscar(u ->
-                (u.getMatricula().equalsIgnoreCase(idLimpio) ||
-                        u.getCorreo().equalsIgnoreCase(idLimpio)) &&
-                        u.getPassword().equals(password)
+        Estudiante estEncontrado = estudiantes.buscar(estudiante ->
+                (estudiante.getMatricula().equalsIgnoreCase(idLimpio) ||
+                        estudiante.getCorreo().equalsIgnoreCase(idLimpio)) &&
+                        estudiante.getPassword().equals(contrasena)
         );
 
         if (estEncontrado != null) {
@@ -84,7 +84,7 @@ public class AuthService {
         // Si no es estudiante buscar en la ListaEnlazada de Administradores
         Administrador adminEncontrado = administradores.buscar(admin ->
                 admin.getCorreo().equalsIgnoreCase(idLimpio) &&
-                        admin.getPassword().equals(password)
+                        admin.getPassword().equals(contrasena)
         );
 
         if (adminEncontrado != null) {

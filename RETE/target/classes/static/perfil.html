@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RETE - Mi perfil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/rete.css">
+    <style>
+        body { background: #e3e3e3; min-height: 100vh; }
+        main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 48px; }
+        h2.titulo { font-size: 30px; font-weight: 800; margin: 8px 0 18px; }
+
+        .perfil-grid { display: grid; grid-template-columns: 270px 1fr; gap: 24px; align-items: stretch; }
+        .tarjeta {
+            background: #f1f1f1;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.3);
+        }
+
+        /* ----- Tarjeta lateral ----- */
+        .lateral { background: #fff; display: flex; flex-direction: column; align-items: center; padding: 48px 20px 22px; }
+        .avatar-wrap { position: relative; width: 160px; height: 160px; }
+        .avatar {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 4px solid var(--turquesa);
+            padding: 6px;
+            background: #fff;
+        }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; background: #bdbdbd; overflow: hidden; }
+        .avatar-img img, .avatar-img svg { width: 100%; height: 100%; display: block; object-fit: cover; }
+        .btn-circulo {
+            position: absolute;
+            width: 40px; height: 40px;
+            border: 0; border-radius: 50%;
+            background: var(--turquesa-claro);
+            cursor: pointer; padding: 9px;
+        }
+        .btn-circulo svg { width: 100%; height: 100%; stroke: #12606a; fill: none; stroke-width: 1.8; }
+        #btn-editar-foto { top: -4px; right: -6px; }
+        #btn-camara { bottom: 6px; left: -10px; }
+        .nombre-lateral { margin: 28px 0 0; font-size: 24px; font-weight: 700; text-align: center; line-height: 1.2; }
+        .rol { margin-top: auto; padding-top: 34px; color: #1d3f6e; font-weight: 700; font-size: 15px; }
+
+        /* ----- Datos personales ----- */
+        .datos { padding: 26px 28px 24px; display: flex; flex-direction: column; }
+        .datos h3 { margin: 0 0 26px; font-size: 22px; font-weight: 700; }
+        .campos { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; }
+        .campo { display: flex; gap: 14px; align-items: flex-start; }
+        .campo .icono { width: 36px; height: 36px; flex: none; stroke: var(--turquesa); fill: none; stroke-width: 1.4; }
+        .campo-cuerpo { flex: 1; border-bottom: 1px solid var(--turquesa); min-width: 0; }
+        .campo label { display: block; color: var(--turquesa); font-size: 14px; font-weight: 500; }
+        .campo input {
+            width: 100%;
+            border: 0; background: transparent;
+            font: inherit; font-size: 15px; color: #000;
+            padding: 2px 0 4px;
+        }
+        .campo input:not([readonly]) { background: #fff; border-radius: 4px; padding-left: 6px; }
+        .acciones { display: flex; justify-content: flex-end; gap: 14px; margin-top: auto; padding-top: 40px; }
+        .acciones .btn { min-width: 120px; }
+
+        @media (max-width: 800px) {
+            .perfil-grid { grid-template-columns: 1fr; }
+            .campos { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="rete-header">
+    <div class="logo-utez">
+        <!-- Coloca aquí el logo de UTEZ (img/utez-logo.png)-->
+        <img src="img/utez-logo.png" alt="UTEZ"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+        <span style="display:none;">UTEZ</span>
+    </div>
+    <h1>AbModel - Inscripción a talleres</h1>
+
+    <button class="menu-btn" id="btn-menu" aria-label="Abrir menú" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <nav class="menu-nav" id="menu-nav" aria-label="Menú principal">
+        <div class="menu-usuario">
+            <strong id="menu-nombre">Julian Daniel Perez Perez</strong>
+            <span id="menu-rol">Estudiante</span>
+        </div>
+        <ul>
+            <li><a href="perfil.html">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+                Mi perfil</a></li>
+            <li><a href="catalogo.html">
+                <svg viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-9-2v14c4 0 7 .5 9 2 2-1.5 5-2 9-2V4c-4 0-7 .5-9 2zM12 6v14"/></svg>
+                Talleres Existentes</a></li>
+            <li><a href="inscripciones.html">
+                <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>
+                Mis talleres</a></li>
+            <li><a href="guardados.html">
+                <svg viewBox="0 0 24 24"><path d="M12 21s-8-5.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.6-8 11-8 11z"/></svg>
+                Talleres guardados</a></li>
+        </ul>
+        <div class="menu-salir-wrap">
+            <button type="button" class="menu-salir" onclick="cerrarSesion()">
+                <svg viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/></svg>
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <h2 class="titulo">Mi perfil del Estudiante</h2>
+
+    <div class="perfil-grid">
+
+        <!--Tarjeta lateral: foto, nombre y rol-->
+        <aside class="tarjeta lateral">
+            <div class="avatar-wrap">
+                <div class="avatar">
+                    <div class="avatar-img">
+                        <!-- LÓGICA: asignar la foto del usuario en #foto-perfil (src) -->
+                        <svg id="foto-perfil" viewBox="0 0 100 100" aria-label="Foto de perfil">
+                            <rect width="100" height="100" fill="#bdbdbd"/>
+                            <circle cx="50" cy="40" r="19" fill="#f1f1f1"/>
+                            <path d="M12 100c0-22 17-34 38-34s38 12 38 34z" fill="#f1f1f1"/>
+                        </svg>
+                    </div>
+                </div>
+                <button class="btn-circulo" id="btn-editar-foto" aria-label="Editar foto" onclick="editarFoto()">
+                    <svg viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></svg>
+                </button>
+                <button class="btn-circulo" id="btn-camara" aria-label="Tomar o subir foto" onclick="editarFoto()">
+                    <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                </button>
+                <input type="file" id="input-foto" accept="image/*" hidden>
+            </div>
+
+            <h3 class="nombre-lateral" id="perfil-nombre-lateral">Julian Daniel Perez Perez</h3>
+            <div class="rol" id="perfil-rol">Estudiante</div>
+        </aside>
+
+        <!--Tarjeta de datos personales-->
+        <section class="tarjeta datos">
+            <h3>Datos personales</h3>
+
+            <form id="form-perfil" onsubmit="guardarPerfil(event)">
+                <div class="campos">
+                    <div class="campo">
+                        <svg class="icono" viewBox="0 0 36 36"><circle cx="18" cy="11" r="5"/><path d="M8 30c0-6 4-9 10-9s10 3 10 9"/></svg>
+                        <div class="campo-cuerpo">
+                            <label for="perfil-id">ID del estudiante</label>
+                            <input type="text" id="perfil-id" name="idEstudiante" value="1048" readonly>
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <svg class="icono" viewBox="0 0 36 36"><rect x="3" y="7" width="30" height="22" rx="3"/><path d="M3 15h30"/></svg>
+                        <div class="campo-cuerpo">
+                            <label for="perfil-matricula">Matrícula</label>
+                            <input type="text" id="perfil-matricula" name="matricula" value="20253ds108" readonly>
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <svg class="icono" viewBox="0 0 36 36"><circle cx="18" cy="11" r="5"/><path d="M8 30c0-6 4-9 10-9s10 3 10 9"/></svg>
+                        <div class="campo-cuerpo">
+                            <label for="perfil-nombre">Nombre completo</label>
+                            <input type="text" id="perfil-nombre" name="nombre" value="Julian Daniel Perez Perez" readonly>
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <svg class="icono" viewBox="0 0 36 36"><rect x="3" y="7" width="30" height="22" rx="3"/><path d="M3 10l15 11 15-11"/></svg>
+                        <div class="campo-cuerpo">
+                            <label for="perfil-correo">Correo institucional</label>
+                            <input type="email" id="perfil-correo" name="correo" value="20253ds108@utez.edu.mx" readonly>
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <svg class="icono" viewBox="0 0 36 36"><circle cx="13" cy="11" r="4.5"/><circle cx="25" cy="13" r="4"/><path d="M4 30c0-6 3-9 9-9s9 3 9 9M22 22c5 0 9 2 10 8"/></svg>
+                        <div class="campo-cuerpo">
+                            <label for="perfil-grupo">Grado y grupo</label>
+                            <input type="text" id="perfil-grupo" name="gradoGrupo" value="4D" readonly>
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <svg class="icono" viewBox="0 0 36 36"><rect x="7" y="16" width="22" height="15" rx="3"/><path d="M12 16v-4a6 6 0 0 1 12 0v4"/></svg>
+                        <div class="campo-cuerpo">
+                            <label for="perfil-pass">Contraseña</label>
+                            <input type="password" id="perfil-pass" name="password" value="12345678" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <button type="button" class="btn btn-primario" id="btn-editar-perfil" onclick="editarPerfil()">Editar perfil</button>
+                    <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion" onclick="cerrarSesion()">Cerrar sesión</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+
+<script src="js/rete.js"></script>
+<script>
+
+    // ===== Lógica pendiente =====
+    function cargarPerfil() {
+        // TODO: leer sessionStorage.getItem('usuario') y/o hacer fetch al backend
+        //       para rellenar #perfil-id, #perfil-matricula, #perfil-nombre,
+        //       #perfil-correo, #perfil-grupo, #perfil-nombre-lateral y #perfil-rol.
+    }
+
+    function editarPerfil() {
+        // TODO: quitar el atributo readonly de los inputs editables, cambiar el texto
+        //       del botón a "Guardar" y enviar el formulario (guardarPerfil).
+    }
+
+    function guardarPerfil(e) {
+        e.preventDefault();
+        // TODO: fetch PUT/POST con los datos de #form-perfil y volver a poner readonly.
+    }
+
+    function editarFoto() {
+        // TODO: document.getElementById('input-foto').click() y subir la imagen elegida.
+    }
+
+    cargarPerfil();
+</script>
+</body>
+</html>
