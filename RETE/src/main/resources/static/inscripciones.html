@@ -2,70 +2,297 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RETE - Mis Inscripciones</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/rete.css">
+    <style>
+        body { background: #f5f5f5; min-height: 100vh; }
+
+        .nav-pantallas { text-align: center; font-size: 13px; padding: 10px 12px 0; }
+        .nav-pantallas a { color: var(--azul); text-decoration: none; margin: 0 6px; }
+        .nav-pantallas a:hover { text-decoration: underline; }
+
+        main { max-width: 1100px; margin: 0 auto; padding: 22px 24px 48px; }
+
+        /*Título y filtros*/
+        .encabezado { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 14px; margin-bottom: 18px; }
+        .encabezado h2 { margin: 0; font-size: 30px; font-weight: 800; }
+        .encabezado p { margin: 2px 0 0; color: var(--gris-texto); font-size: 14px; }
+        .filtros { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filtro {
+            border: 0; border-radius: 999px;
+            background: #e6e8ea; color: #333;
+            font: inherit; font-size: 12px; font-weight: 500;
+            padding: 7px 16px; cursor: pointer;
+        }
+        .filtro:hover { background: #d9dde0; }
+        .filtro.activo { background: var(--azul); color: #fff; font-weight: 600; }
+
+        /*Tarjetas*/
+        #lista-talleres { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+        .mensaje { grid-column: 1 / -1; background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.15); font-size: 14px; }
+        .mensaje a { color: var(--azul); font-weight: 600; }
+
+        .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 5px rgba(0,0,0,.2); padding: 8px 8px 10px; display: flex; flex-direction: column; }
+        .card-img {
+            position: relative; aspect-ratio: 16 / 9;
+            border-radius: 8px; overflow: hidden;
+            background: linear-gradient(135deg, #0f7f8f, #0b3a63);
+        }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .badge { position: absolute; top: 6px; right: 6px; font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 6px; color: #12332c; }
+        .badge.en-curso { background: #a9ebdd; }
+        .badge.terminado { background: #b9efc9; }
+        .badge.reprobado { background: #ffb4a0; color: #6b1d0d; }
+        .badge.otro { background: #e0e0e0; color: #444; }
+
+        .card h3 { margin: 12px 4px 8px; font-size: 17px; font-weight: 700; }
+        .fila { display: flex; align-items: center; gap: 8px; margin: 0 4px 6px; font-size: 12px; color: #555; }
+        .fila svg { width: 14px; height: 14px; flex: none; stroke: #666; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .folio { margin: 2px 4px 0; font-size: 10px; color: #999; }
+
+        .acciones { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding: 10px 4px 0; border-top: 1px solid #ececec; }
+        .card .folio + .acciones, .card .fila:last-of-type + .acciones { margin-top: 10px; }
+        .btn-mini {
+            border: 0; border-radius: 6px; color: #fff;
+            font: inherit; font-size: 11px; font-weight: 600;
+            padding: 8px 14px; cursor: pointer;
+        }
+        .btn-mini.primario { background: var(--azul); }
+        .btn-mini.primario:hover { background: var(--azul-oscuro); }
+        .btn-mini.turquesa { background: #5bb8c0; width: 100%; }
+        .btn-mini.turquesa:hover { background: var(--turquesa-oscuro); }
+        .btn-texto {
+            border: 0; background: transparent; color: #888;
+            font: inherit; font-size: 11px; cursor: pointer; padding: 6px;
+            text-decoration: none;
+        }
+        .btn-texto:hover { color: #b3261e; }
+        .acciones.centro { justify-content: center; }
+        .acciones.centro .btn-texto:hover { color: var(--azul); }
+
+        /*Paginación*/
+        #paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 22px; }
+        #paginacion button {
+            min-width: 28px; height: 28px; border: 0; border-radius: 6px;
+            background: transparent; color: #444; font: inherit; font-size: 12px; cursor: pointer;
+        }
+        #paginacion button:hover:not(:disabled) { background: #e6e8ea; }
+        #paginacion button.actual { background: var(--azul); color: #fff; font-weight: 600; }
+        #paginacion button:disabled { color: #bbb; cursor: default; }
+
+        /*Comprobante*/
+        #comprobante { display: none; }
+        @media print {
+            body > *:not(#comprobante) { display: none !important; }
+            #comprobante { display: block; border: 2px solid #000; padding: 15px; max-width: 500px; margin: 20px auto; background: #fff; }
+        }
+    </style>
 </head>
 <body>
-<nav>
-    <a href="index.html">1. Inicio / Login</a> |
-    <a href="catalogo.html">2. Catálogo</a> |
-    <a href="inscripciones.html">3. Mis Inscripciones</a> |
-    <a href="admin.html">4. Administración</a>
-</nav>
-<hr>
 
-<h1>Mi Taller Actual y Comprobante</h1>
-<div id="taller-activo"></div>
+<header class="rete-header">
+    <div class="logo-utez">
+        <!-- Coloca aquí el logo de UTEZ (img/utez-logo.png)-->
+        <img src="img/utez-logo.png" alt="UTEZ"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+        <span style="display:none;">UTEZ</span>
+    </div>
+    <h1>AbModel - Inscripción a talleres</h1>
 
-<hr>
-<h2>Historial de Inscripciones</h2>
-<div id="historial"></div>
+    <button class="menu-btn" id="btn-menu" aria-label="Abrir menú" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <nav class="menu-nav" id="menu-nav" aria-label="Menú principal">
+        <div class="menu-usuario">
+            <strong id="menu-nombre">Julian Daniel Perez Perez</strong>
+            <span id="menu-rol">Estudiante</span>
+        </div>
+        <ul>
+            <li><a href="perfil.html">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+                Mi perfil</a></li>
+            <li><a href="catalogo.html">
+                <svg viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-9-2v14c4 0 7 .5 9 2 2-1.5 5-2 9-2V4c-4 0-7 .5-9 2zM12 6v14"/></svg>
+                Talleres Existentes</a></li>
+            <li><a href="inscripciones.html">
+                <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>
+                Mis talleres</a></li>
+            <li><a href="guardados.html">
+                <svg viewBox="0 0 24 24"><path d="M12 21s-8-5.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.6-8 11-8 11z"/></svg>
+                Talleres guardados</a></li>
+        </ul>
+        <div class="menu-salir-wrap">
+            <button type="button" class="menu-salir" onclick="cerrarSesion()">
+                <svg viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/></svg>
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+</header>
 
+<main>
+    <div class="encabezado">
+        <div>
+            <h2>Mis Talleres</h2>
+            <p>Seguimiento académico y comprobantes</p>
+        </div>
+        <div class="filtros" id="filtros">
+            <button class="filtro activo" data-filtro="todos" onclick="aplicarFiltro('todos')">Todos</button>
+            <button class="filtro" data-filtro="en-curso" onclick="aplicarFiltro('en-curso')">En curso</button>
+            <button class="filtro" data-filtro="terminado" onclick="aplicarFiltro('terminado')">Terminados</button>
+            <button class="filtro" data-filtro="reprobado" onclick="aplicarFiltro('reprobado')">Reprobados</button>
+        </div>
+    </div>
+
+    <div id="lista-talleres"></div>
+    <div id="paginacion"></div>
+</main>
+
+<!--Comprobante imprimible-->
+<div id="comprobante"></div>
+
+<script src="js/rete.js"></script>
 <script>
     const usuario = JSON.parse(sessionStorage.getItem('usuario'));
 
+    const POR_PAGINA = 4;
+    let inscripciones = [];
+    let filtroActual = 'todos';
+    let paginaActual = 1;
+
+    const ICONO = {
+        persona: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
+        reloj:   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+        lugar:   '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/></svg>'
+    };
+
+    // 'Confirmada' = en curso (misma regla que la versión original)
+    function claseEstado(estado) {
+        const e = (estado || '').toLowerCase();
+        if (estado === 'Confirmada') return 'en-curso';
+        if (e.startsWith('termin') || e === 'finalizada' || e === 'aprobado') return 'terminado';
+        if (e.startsWith('reprob')) return 'reprobado';
+        return 'otro';
+    }
+
+    function etiquetaEstado(estado) {
+        return estado === 'Confirmada' ? 'En curso' : estado;
+    }
+
     async function cargarMisInscripciones() {
+        const contenedor = document.getElementById('lista-talleres');
+
         if (!usuario || !usuario.idEstudiante) {
-            document.getElementById('taller-activo').innerHTML =
-                '<p>Debes <a href="index.html">iniciar sesión</a> para ver tus inscripciones.</p>';
+            contenedor.innerHTML =
+                '<p class="mensaje">Debes <a href="index.html">iniciar sesión</a> para ver tus inscripciones.</p>';
             return;
         }
 
         const res = await fetch(`/api/talleres/mis-inscripciones?idEstudiante=${usuario.idEstudiante}`);
-        const lista = await res.json();
+        inscripciones = await res.json();
+        pintar();
+    }
 
-        const activa = lista.find(i => i.estado === 'Confirmada');
-        const contenedorActivo = document.getElementById('taller-activo');
+    function aplicarFiltro(filtro) {
+        filtroActual = filtro;
+        paginaActual = 1;
+        document.querySelectorAll('.filtro').forEach(b =>
+            b.classList.toggle('activo', b.dataset.filtro === filtro));
+        pintar();
+    }
 
-        if (activa) {
-            contenedorActivo.innerHTML = `
-                    <div id="comprobante" style="border:2px solid #000; padding:15px; max-width:500px;">
-                        <h3>COMPROBANTE DE INSCRIPCIÓN - RETE</h3>
-                        <p><b>Folio:</b> ${activa.folio}</p>
-                        <p><b>Alumno:</b> ${activa.nombreAlumno} (${activa.matricula})</p>
-                        <p><b>Taller:</b> ${activa.nombreTaller}</p>
-                        <p><b>Instructor:</b> ${activa.instructor}</p>
-                        <p><b>Horario:</b> ${activa.horario}</p>
-                        <p><b>Aula:</b> ${activa.aula}</p>
-                        <p><b>Estado:</b> ${activa.estado}</p>
-                        <button onclick="window.print()">Imprimir / Guardar Comprobante PDF</button>
-                        <button onclick="cancelar(${activa.idInscripcion})" style="color:red;">Cancelar Inscripción</button>
-                    </div>
-                `;
+    function cambiarPagina(n) {
+        paginaActual = n;
+        pintar();
+    }
+
+    function tarjeta(i) {
+        const clase = claseEstado(i.estado);
+        const detalle = i.idTaller ? `detalle-taller.html?id=${i.idTaller}` : '#';
+        let acciones;
+        if (clase === 'en-curso') {
+            acciones = `
+                <div class="acciones">
+                    <button class="btn-mini primario" onclick="imprimirComprobante(${i.idInscripcion})">Comprobante PDF</button>
+                    <button class="btn-texto" onclick="cancelar(${i.idInscripcion})">Cancelar</button>
+                </div>`;
+        } else if (clase === 'terminado') {
+            acciones = `
+                <div class="acciones">
+                    <button class="btn-mini turquesa" onclick="imprimirComprobante(${i.idInscripcion}, 'CONSTANCIA DE TALLER - RETE')">Constancia PDF</button>
+                </div>`;
         } else {
-            contenedorActivo.innerHTML = '<p>No tienes ningún taller activo actualmente. Ve al <a href="catalogo.html">Catálogo</a> para inscribirte.</p>';
+            acciones = `
+                <div class="acciones centro">
+                    <a class="btn-texto" href="${detalle}">Ver detalle</a>
+                </div>`;
         }
 
-        const historial = lista.filter(i => i.estado !== 'Confirmada');
-        const contenedorHist = document.getElementById('historial');
-        if (historial.length === 0) {
-            contenedorHist.innerHTML = '<p>Sin movimientos anteriores.</p>';
-        } else {
-            contenedorHist.innerHTML = historial.map(h => `
-                    <div style="border:1px solid #ccc; padding:8px; margin-bottom:5px;">
-                        <b>${h.nombreTaller}</b> | Folio: ${h.folio} | Horario: ${h.horario} | Estado: <b>${h.estado}</b>
-                    </div>
-                `).join('');
+        return `
+            <article class="card">
+                <div class="card-img">
+                    ${i.imagen ? `<img src="${i.imagen}" alt="${i.nombreTaller}" onerror="this.style.display='none'">` : ''}
+                    <span class="badge ${clase}">${etiquetaEstado(i.estado)}</span>
+                </div>
+                <h3>${i.nombreTaller}</h3>
+                <p class="fila">${ICONO.persona} ${i.instructor}</p>
+                <p class="fila">${ICONO.reloj} ${i.horario}</p>
+                <p class="fila">${ICONO.lugar} ${i.aula}</p>
+                <p class="folio">Folio: ${i.folio}</p>
+                ${acciones}
+            </article>`;
+    }
+
+    function pintar() {
+        const contenedor = document.getElementById('lista-talleres');
+        const filtradas = inscripciones.filter(i => filtroActual === 'todos' || claseEstado(i.estado) === filtroActual);
+
+        if (filtradas.length === 0) {
+            const hayActivas = inscripciones.some(i => i.estado === 'Confirmada');
+            contenedor.innerHTML = (filtroActual === 'en-curso' || (filtroActual === 'todos' && !hayActivas))
+                ? '<p class="mensaje">No tienes ningún taller activo actualmente. Ve al <a href="catalogo.html">Catálogo</a> para inscribirte.</p>'
+                : '<p class="mensaje">Sin movimientos anteriores.</p>';
+            document.getElementById('paginacion').innerHTML = '';
+            return;
         }
+
+        const totalPaginas = Math.ceil(filtradas.length / POR_PAGINA);
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+        const inicio = (paginaActual - 1) * POR_PAGINA;
+        contenedor.innerHTML = filtradas.slice(inicio, inicio + POR_PAGINA).map(tarjeta).join('');
+        pintarPaginacion(totalPaginas);
+    }
+
+    function pintarPaginacion(total) {
+        const pag = document.getElementById('paginacion');
+        if (total <= 1) { pag.innerHTML = ''; return; }
+        let html = `<button ${paginaActual === 1 ? 'disabled' : ''} onclick="cambiarPagina(${paginaActual - 1})" aria-label="Anterior">‹</button>`;
+        for (let n = 1; n <= total; n++) {
+            html += `<button class="${n === paginaActual ? 'actual' : ''}" onclick="cambiarPagina(${n})">${n}</button>`;
+        }
+        html += `<button ${paginaActual === total ? 'disabled' : ''} onclick="cambiarPagina(${paginaActual + 1})" aria-label="Siguiente">›</button>`;
+        pag.innerHTML = html;
+    }
+
+    // Mismo comprobante que la versión original; ahora se imprime desde la tarjeta elegida
+    function imprimirComprobante(idInscripcion, titulo = 'COMPROBANTE DE INSCRIPCIÓN - RETE') {
+        const activa = inscripciones.find(i => i.idInscripcion === idInscripcion);
+        if (!activa) return;
+        document.getElementById('comprobante').innerHTML = `
+            <h3>${titulo}</h3>
+            <p><b>Folio:</b> ${activa.folio}</p>
+            <p><b>Alumno:</b> ${activa.nombreAlumno} (${activa.matricula})</p>
+            <p><b>Taller:</b> ${activa.nombreTaller}</p>
+            <p><b>Instructor:</b> ${activa.instructor}</p>
+            <p><b>Horario:</b> ${activa.horario}</p>
+            <p><b>Aula:</b> ${activa.aula}</p>
+            <p><b>Estado:</b> ${activa.estado}</p>
+        `;
+        window.print();
     }
 
     async function cancelar(idInscripcion) {
