@@ -36,7 +36,6 @@ public class TallerService {
     @PostConstruct
     public void inicializarDatos() {
         //Esto es solo para inicializar la base de datos con algunos talleres de prueba
-        //Aun tengo que ver que hacer cuando borremos estos talleres de prueba, si los borramos de la base de datos o los dejamos ahi
         if (tallerRepository.count() == 0) {
             tallerRepository.save(new Taller(null, "Voleibol", "Entrenamiento y torneos", "Prof. Carlos", "Lunes", LocalTime.of(14, 0), LocalTime.of(16, 0), "Cancha 1", 20, 20, true));
             tallerRepository.save(new Taller(null, "Basquetbol", "Fundamentos y práctica", "Prof. Ana", "Lunes", LocalTime.of(15, 0), LocalTime.of(17, 0), "Cancha 2", 15, 8, true));
@@ -72,16 +71,17 @@ public class TallerService {
     public String inscribirAlumno(int idEstudiante, int idTaller) {
         // Esto valida que el alumno no tenga ya un taller activo
         Inscripcion inscripcionActiva = inscripciones.buscar(
-                i -> i.getIdEstudiante() == idEstudiante && "Confirmada".equalsIgnoreCase(i.getEstado())
+                inscripcion -> inscripcion.getIdEstudiante() == idEstudiante && "Confirmada".equalsIgnoreCase(inscripcion.getEstado())
         );
+        // Aqui se obtiene el taller actual del alumno para mostrarlo en el mensaje de error si ya tiene un taller activo
         if (inscripcionActiva != null) {
-            Taller tallerActual = talleres.buscar(t -> t.getIdTaller().equals(inscripcionActiva.getIdTaller()));
+            Taller tallerActual = talleres.buscar(taller -> taller.getIdTaller().equals(inscripcionActiva.getIdTaller()));
             String nombreActual = (tallerActual != null) ? tallerActual.getNombreTaller() : "otro taller";
             return "Ya estás inscrito en " + nombreActual + ". Solo puedes cursar un taller a la vez; cancélalo primero si deseas cambiar.";
         }
 
         // Esto valida la existencia, estado y cupo del taller al que se quiere inscribir el alumno
-        Taller tallerDestino = talleres.buscar(t -> t.getIdTaller() == idTaller);
+        Taller tallerDestino = talleres.buscar(taller -> taller.getIdTaller() == idTaller);
         if (tallerDestino == null || !tallerDestino.isActivo()) {
             return "El taller no existe o no está activo.";
         }
@@ -94,7 +94,6 @@ public class TallerService {
         tallerRepository.save(tallerDestino);
 
         // Guardamos la inscripcion con un folio unico
-        //Aun o estoy seguro de esto, pero creo que es mejor generar un folio unico para cada inscripcion, asi podemos identificarla facilmente
         String folio = "RETE-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         Inscripcion nueva = new Inscripcion(null, folio, idEstudiante, idTaller, LocalDateTime.now(), "Confirmada");
         Inscripcion guardada = inscripcionRepository.save(nueva);
