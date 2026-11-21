@@ -31,17 +31,6 @@ public class TallerController {
         return Map.of("mensaje", resultado);
     }
 
-    @GetMapping("/mis-inscripciones")
-    public List<Map<String, Object>> misInscripciones(@RequestParam int idEstudiante) {
-        return tallerService.obtenerInscripcionesAlumno(idEstudiante);
-    }
-
-    @PostMapping("/cancelar")
-    public Map<String, String> cancelar(@RequestParam int idInscripcion, @RequestParam int idEstudiante) {
-        String resultado = tallerService.cancelarInscripcion(idInscripcion, idEstudiante);
-        return Map.of("mensaje", resultado);
-    }
-
     @GetMapping("/admin/todos")
     public List<Taller> listarTodosAdmin() {
         return tallerService.obtenerTodosParaAdmin();

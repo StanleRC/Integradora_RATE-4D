@@ -35,10 +35,10 @@ public class TallerService {
     @PostConstruct
     public void inicializarDatos() {
         if (tallerRepository.count() == 0) {
-            tallerRepository.save(new Taller(null, "Voleibol", "Entrenamiento y torneos", "Prof. Carlos", "Lunes", LocalTime.of(14, 0), LocalTime.of(16, 0), "Cancha 1", null, 20, 20, true));
-            tallerRepository.save(new Taller(null, "Basquetbol", "Fundamentos y práctica", "Prof. Ana", "Lunes", LocalTime.of(15, 0), LocalTime.of(17, 0), "Cancha 2", null, 15, 8, true));
-            tallerRepository.save(new Taller(null, "Pintura", "Técnicas en óleo", "Mtra. Elena", "Miércoles", LocalTime.of(14, 0), LocalTime.of(16, 0), "Aula Arte 2", null, 12, 5, true));
-            tallerRepository.save(new Taller(null, "Canto", "Vocalización y ensamble", "Prof. Luis", "Viernes", LocalTime.of(13, 0), LocalTime.of(15, 0), "Auditorio", "/img/talleres/canto-1.png", 10, 10, true));
+            tallerRepository.save(new Taller(null, "Voleibol", "Entrenamiento y torneos", "Prof. Carlos", "Lunes", LocalTime.of(14, 0), LocalTime.of(16, 0), "Cancha 1", "/img/talleres/Voli.png", 20, 16, true));
+            tallerRepository.save(new Taller(null, "Basquetbol", "Fundamentos y práctica", "Prof. Ana", "Lunes", LocalTime.of(15, 0), LocalTime.of(17, 0), "Cancha 2", "/img/talleres/basquet.png", 15, 8, true));
+            tallerRepository.save(new Taller(null, "Pintura", "Técnicas en óleo", "Mtra. Elena", "Miércoles", LocalTime.of(14, 0), LocalTime.of(16, 0), "Aula Arte 2", "/img/talleres/pintura.png", 12, 5, true));
+            tallerRepository.save(new Taller(null, "Canto", "Vocalización y ensamble", "Prof. Luis", "Viernes", LocalTime.of(13, 0), LocalTime.of(15, 0), "Auditorio", "/img/talleres/canto-1.png", 10, 6, true));
         }
 
         for (Taller t : tallerRepository.findAll()) {
