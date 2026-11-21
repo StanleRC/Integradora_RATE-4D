@@ -1,84 +1,225 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>RETE - Mis Inscripciones</title>
-</head>
-<body>
-<nav>
-    <a href="index.html">1. Inicio / Login</a> |
-    <a href="catalogo.html">2. Catálogo</a> |
-    <a href="inscripciones.html">3. Mis Inscripciones</a> |
-    <a href="admin.html">4. Administración</a>
-</nav>
-<hr>
-
-<h1>Mi Taller Actual y Comprobante</h1>
-<div id="taller-activo"></div>
-
-<hr>
-<h2>Historial de Inscripciones</h2>
-<div id="historial"></div>
-
+<script src="js/rete.js"></script>
 <script>
-    const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+    const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
+
+    const POR_PAGINA = 4;
+    let inscripciones = [];
+    let filtroActual = 'todos';
+    let paginaActual = 1;
+
+    const ICONO = {
+        persona: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
+        reloj:   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+        lugar:   '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'
+    };
+
+    // Evita inyección de HTML si algún dato viene con caracteres especiales
+    function escaparHTML(texto) {
+        return String(texto ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // Normaliza el estado sin importar mayúsculas/minúsculas desde la BD
+    function claseEstado(estado) {
+        const e = (estado || '').trim().toLowerCase();
+        if (e === 'confirmada' || e === 'en curso' || e === 'activa') return 'en-curso';
+        if (e.startsWith('termin') || e === 'finalizada' || e === 'aprobado' || e === 'aprobada') return 'terminado';
+        if (e.startsWith('reprob')) return 'reprobado';
+        return 'otro';
+    }
+
+    function etiquetaEstado(estado) {
+        const clase = claseEstado(estado);
+        if (clase === 'en-curso') return 'En curso';
+        return estado || 'Sin estado';
+    }
+
+    // Sincroniza el nombre del menú lateral si existe en sessionStorage
+    function hidratarUsuarioMenu() {
+        if (!usuario) return;
+        const elNombre = document.getElementById('menu-nombre');
+        const elRol = document.getElementById('menu-rol');
+        if (elNombre && usuario.nombre) elNombre.textContent = usuario.nombre;
+        if (elRol && usuario.rol) elRol.textContent = usuario.rol;
+    }
 
     async function cargarMisInscripciones() {
+        const contenedor = document.getElementById('lista-talleres');
+
         if (!usuario || !usuario.idEstudiante) {
-            document.getElementById('taller-activo').innerHTML =
-                '<p>Debes <a href="index.html">iniciar sesión</a> para ver tus inscripciones.</p>';
+            contenedor.innerHTML =
+                '<p class="mensaje">Debes <a href="index.html">iniciar sesión</a> para ver tus inscripciones.</p>';
+            document.getElementById('paginacion').innerHTML = '';
             return;
         }
 
-        const res = await fetch(`/api/talleres/mis-inscripciones?idEstudiante=${usuario.idEstudiante}`);
-        const lista = await res.json();
+        contenedor.innerHTML = '<p class="mensaje">Cargando tus talleres...</p>';
 
-        const activa = lista.find(i => i.estado === 'Confirmada');
-        const contenedorActivo = document.getElementById('taller-activo');
-
-        if (activa) {
-            contenedorActivo.innerHTML = `
-                    <div id="comprobante" style="border:2px solid #000; padding:15px; max-width:500px;">
-                        <h3>COMPROBANTE DE INSCRIPCIÓN - RETE</h3>
-                        <p><b>Folio:</b> ${activa.folio}</p>
-                        <p><b>Alumno:</b> ${activa.nombreAlumno} (${activa.matricula})</p>
-                        <p><b>Taller:</b> ${activa.nombreTaller}</p>
-                        <p><b>Instructor:</b> ${activa.instructor}</p>
-                        <p><b>Horario:</b> ${activa.horario}</p>
-                        <p><b>Aula:</b> ${activa.aula}</p>
-                        <p><b>Estado:</b> ${activa.estado}</p>
-                        <button onclick="window.print()">Imprimir / Guardar Comprobante PDF</button>
-                        <button onclick="cancelar(${activa.idInscripcion})" style="color:red;">Cancelar Inscripción</button>
-                    </div>
-                `;
-        } else {
-            contenedorActivo.innerHTML = '<p>No tienes ningún taller activo actualmente. Ve al <a href="catalogo.html">Catálogo</a> para inscribirte.</p>';
-        }
-
-        const historial = lista.filter(i => i.estado !== 'Confirmada');
-        const contenedorHist = document.getElementById('historial');
-        if (historial.length === 0) {
-            contenedorHist.innerHTML = '<p>Sin movimientos anteriores.</p>';
-        } else {
-            contenedorHist.innerHTML = historial.map(h => `
-                    <div style="border:1px solid #ccc; padding:8px; margin-bottom:5px;">
-                        <b>${h.nombreTaller}</b> | Folio: ${h.folio} | Horario: ${h.horario} | Estado: <b>${h.estado}</b>
-                    </div>
-                `).join('');
+        try {
+            const res = await fetch(`/api/talleres/mis-inscripciones?idEstudiante=${encodeURIComponent(usuario.idEstudiante)}`);
+            if (!res.ok) {
+                throw new Error(`Error del servidor (${res.status})`);
+            }
+            const data = await res.json();
+            inscripciones = Array.isArray(data) ? data : [];
+            pintar();
+        } catch (err) {
+            console.error('Error al cargar inscripciones:', err);
+            contenedor.innerHTML =
+                '<p class="mensaje">No se pudieron cargar tus inscripciones. Verifica tu conexión o intenta más tarde.</p>';
+            document.getElementById('paginacion').innerHTML = '';
         }
     }
 
-    async function cancelar(idInscripcion) {
+    function aplicarFiltro(filtro) {
+        filtroActual = filtro;
+        paginaActual = 1;
+        document.querySelectorAll('.filtro').forEach(b =>
+            b.classList.toggle('activo', b.dataset.filtro === filtro)
+        );
+        pintar();
+    }
+
+    function cambiarPagina(n) {
+        paginaActual = n;
+        pintar();
+        document.querySelector('.encabezado')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function tarjeta(i) {
+        const clase = claseEstado(i.estado);
+        const detalle = i.idTaller ? `detalle-taller.html?id=${encodeURIComponent(i.idTaller)}` : '#';
+
+        const nombreTaller = escaparHTML(i.nombreTaller || 'Taller sin nombre');
+        const instructor = escaparHTML(i.instructor || 'Instructor por asignar');
+        const horario = escaparHTML(i.horario || 'Horario por definir');
+        const aula = escaparHTML(i.aula || 'Aula por definir');
+        const folio = escaparHTML(i.folio || 'S/F');
+
+        let acciones = '';
+        if (clase === 'en-curso') {
+            acciones = `
+                <div class="acciones">
+                    <button type="button" class="btn-mini primario" onclick="imprimirComprobante(${i.idInscripcion})">Comprobante PDF</button>
+                    <button type="button" class="btn-texto" onclick="cancelar(${i.idInscripcion}, this)">Cancelar</button>
+                </div>`;
+        } else if (clase === 'terminado') {
+            acciones = `
+                <div class="acciones">
+                    <button type="button" class="btn-mini turquesa" onclick="imprimirComprobante(${i.idInscripcion}, 'CONSTANCIA DE TALLER - RETE')">Constancia PDF</button>
+                </div>`;
+        } else {
+            acciones = `
+                <div class="acciones centro">
+                    <a class="btn-texto" href="${detalle}">Ver detalle</a>
+                </div>`;
+        }
+
+        return `
+            <article class="card">
+                <div class="card-img">
+                    ${i.imagen ? `<img src="${escaparHTML(i.imagen)}" alt="${nombreTaller}" onerror="this.style.display='none'">` : ''}
+                    <span class="badge ${clase}">${escaparHTML(etiquetaEstado(i.estado))}</span>
+                </div>
+                <h3>${nombreTaller}</h3>
+                <p class="fila">${ICONO.persona} ${instructor}</p>
+                <p class="fila">${ICONO.reloj} ${horario}</p>
+                <p class="fila">${ICONO.lugar} ${aula}</p>
+                <p class="folio">Folio: ${folio}</p>
+                ${acciones}
+            </article>`;
+    }
+
+    function pintar() {
+        const contenedor = document.getElementById('lista-talleres');
+        const filtradas = inscripciones.filter(i =>
+            filtroActual === 'todos' || claseEstado(i.estado) === filtroActual
+        );
+
+        if (filtradas.length === 0) {
+            const hayActivas = inscripciones.some(i => claseEstado(i.estado) === 'en-curso');
+            contenedor.innerHTML = (filtroActual === 'en-curso' || (filtroActual === 'todos' && !hayActivas))
+                ? '<p class="mensaje">No tienes ningún taller activo actualmente. Ve al <a href="catalogo.html">Catálogo</a> para inscribirte.</p>'
+                : '<p class="mensaje">No hay talleres registrados en esta categoría.</p>';
+            document.getElementById('paginacion').innerHTML = '';
+            return;
+        }
+
+        const totalPaginas = Math.ceil(filtradas.length / POR_PAGINA);
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+        if (paginaActual < 1) paginaActual = 1;
+
+        const inicio = (paginaActual - 1) * POR_PAGINA;
+        contenedor.innerHTML = filtradas.slice(inicio, inicio + POR_PAGINA).map(tarjeta).join('');
+        pintarPaginacion(totalPaginas);
+    }
+
+    function pintarPaginacion(total) {
+        const pag = document.getElementById('paginacion');
+        if (total <= 1) {
+            pag.innerHTML = '';
+            return;
+        }
+        let html = `<button type="button" ${paginaActual === 1 ? 'disabled' : ''} onclick="cambiarPagina(${paginaActual - 1})" aria-label="Anterior">‹</button>`;
+        for (let n = 1; n <= total; n++) {
+            html += `<button type="button" class="${n === paginaActual ? 'actual' : ''}" onclick="cambiarPagina(${n})">${n}</button>`;
+        }
+        html += `<button type="button" ${paginaActual === total ? 'disabled' : ''} onclick="cambiarPagina(${paginaActual + 1})" aria-label="Siguiente">›</button>`;
+        pag.innerHTML = html;
+    }
+
+    function imprimirComprobante(idInscripcion, titulo = 'COMPROBANTE DE INSCRIPCIÓN - RETE') {
+        const activa = inscripciones.find(i => i.idInscripcion === idInscripcion);
+        if (!activa) return;
+
+        const nombreAlumno = activa.nombreAlumno || usuario?.nombre || 'Estudiante';
+        const matricula = activa.matricula || usuario?.matricula || 'N/A';
+
+        document.getElementById('comprobante').innerHTML = `
+            <h3>${escaparHTML(titulo)}</h3>
+            <p><b>Folio:</b> ${escaparHTML(activa.folio || 'S/F')}</p>
+            <p><b>Alumno:</b> ${escaparHTML(nombreAlumno)} (${escaparHTML(matricula)})</p>
+            <p><b>Taller:</b> ${escaparHTML(activa.nombreTaller)}</p>
+            <p><b>Instructor:</b> ${escaparHTML(activa.instructor || 'Por asignar')}</p>
+            <p><b>Horario:</b> ${escaparHTML(activa.horario || 'Por definir')}</p>
+            <p><b>Aula:</b> ${escaparHTML(activa.aula || 'Por definir')}</p>
+            <p><b>Estado:</b> ${escaparHTML(etiquetaEstado(activa.estado))}</p>
+        `;
+        window.print();
+    }
+
+    async function cancelar(idInscripcion, boton) {
         if (!confirm('¿Seguro que deseas cancelar tu inscripción? Se liberará tu lugar.')) return;
-        const res = await fetch(`/api/talleres/cancelar?idInscripcion=${idInscripcion}&idEstudiante=${usuario.idEstudiante}`, {
-            method: 'POST'
-        });
-        const data = await res.json();
-        alert(data.mensaje);
-        cargarMisInscripciones();
+
+        if (boton) {
+            boton.disabled = true;
+            boton.textContent = 'Cancelando...';
+        }
+
+        try {
+            const url = `/api/talleres/cancelar?idInscripcion=${encodeURIComponent(idInscripcion)}&idEstudiante=${encodeURIComponent(usuario.idEstudiante)}`;
+            const res = await fetch(url, { method: 'POST' });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                throw new Error(data.mensaje || `No se pudo cancelar (Error ${res.status})`);
+            }
+
+            alert(data.mensaje || 'Inscripción cancelada correctamente.');
+            await cargarMisInscripciones();
+        } catch (err) {
+            console.error('Error al cancelar inscripción:', err);
+            alert(err.message || 'Ocurrió un error al intentar cancelar.');
+            if (boton) {
+                boton.disabled = false;
+                boton.textContent = 'Cancelar';
+            }
+        }
     }
 
+    hidratarUsuarioMenu();
     cargarMisInscripciones();
 </script>
-</body>
-</html>

@@ -24,6 +24,7 @@ public class Taller {
     private LocalTime horaInicio; // 14:00
     private LocalTime horaFin;    // 16:00
     private String aula;
+    private String imagen;
     private int cupoMaximo;
     private int inscritosActuales;
     private boolean activo;

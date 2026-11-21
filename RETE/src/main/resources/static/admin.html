@@ -48,6 +48,10 @@
         <label>Aula:</label>
         <input type="text" id="aula" required>
 
+        <label>Ruta de imagen:</label>
+        <input type="text" id="imagen" placeholder="/img/talleres/canto-1.png">
+        <small>Usa una ruta de <code>static</code>, por ejemplo <code>/img/talleres/canto-1.png</code>.</small><br><br>
+
         <label>Cupo Máximo:</label>
         <input type="number" id="cupoMaximo" min="1" required><br><br>
 
@@ -122,6 +126,7 @@
             horaInicio: document.getElementById('horaInicio').value,
             horaFin: document.getElementById('horaFin').value,
             aula: document.getElementById('aula').value,
+            imagen: document.getElementById('imagen').value.trim() || null,
             cupoMaximo: parseInt(document.getElementById('cupoMaximo').value),
             activo: document.getElementById('activo').checked
         };
@@ -152,6 +157,7 @@
         document.getElementById('horaInicio').value = t.horaInicio.substring(0, 5);
         document.getElementById('horaFin').value = t.horaFin.substring(0, 5);
         document.getElementById('aula').value = t.aula;
+        document.getElementById('imagen').value = t.imagen || '';
         document.getElementById('cupoMaximo').value = t.cupoMaximo;
         document.getElementById('activo').checked = t.activo;
     }
@@ -160,6 +166,7 @@
         document.getElementById('titulo-form').innerText = 'Registrar Nuevo Taller';
         document.getElementById('idTaller').value = '';
         document.querySelector('form').reset();
+        document.getElementById('imagen').value = '';
         document.getElementById('activo').checked = true;
     }
 
